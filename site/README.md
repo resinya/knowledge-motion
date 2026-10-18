@@ -1,58 +1,19 @@
-# RepoPilot 官方文档站
+# Knowledge Motion 文档站
 
-由 [Fumadocs](https://fumadocs.dev) + Next.js 16 驱动，**静态导出**部署到 GitHub Pages。
-
-线上地址：<https://resinya.github.io/RepoPilot/>
-
-## 技术栈
-
-| 分类 | 选型 |
-| --- | --- |
-| 框架 | Next.js 16（App Router） |
-| 文档框架 | Fumadocs Core / MDX / UI |
-| 样式 | Tailwind CSS 4（配置写在 CSS 里） |
-| 包管理 | pnpm 10 |
-
-## 常用命令
+沿用当前 GitHub 仓库与 Pages 路径 `https://resinya.github.io/RepoPilot/`，产品内容已改为知识动态信息图与静音视频 Skill。
 
 ```bash
-pnpm dev        # 本地开发，http://localhost:3000
-pnpm build      # 静态导出，产物在 out/
-pnpm types:check
+pnpm install
+pnpm dev
+pnpm build
 ```
 
-本地开发**不要**设 `PAGES=1`，否则会被加上 `/RepoPilot` 前缀。
+Node.js 22.4+。本地开发不设置 `PAGES`；GitHub Pages 构建使用 `PAGES=1`，保留 `/RepoPilot` 子路径。需要自定义域名时设置 `NEXT_PUBLIC_SITE_URL`。
 
-## 改动优先级
+正文位于 `content/docs/`，导航和元数据位于 `src/lib/shared.ts`。不要在站点里创建 SKILL.md；正式入口位于仓库 `skills/knowledge-motion/`。
 
-| 想改什么 | 改哪里 |
-| --- | --- |
-| 站名、仓库地址、导航分类 | `src/lib/shared.ts` |
-| 导航渲染方式 | `src/lib/layout.shared.tsx` |
-| 文档内容 | `content/docs/` |
-| 首页 | `src/app/(home)/page.tsx` |
-| 构建与部署配置 | `next.config.mjs` |
+品牌图片、案例封面和三条精选视频统一放在根目录 `assets/`；dev/build 会运行 `scripts/sync-assets.mjs`，复制到 public 下供网站使用。这些生成副本不提交。只有精选案例作为官网素材保留，实验过程仍放在忽略的 `out/`。
 
-## 部署相关的四个约束
+效果案例入口是 `/examples`，内容在 `src/lib/examples.ts`，视频支持在线播放、进度拖动与下载。
 
-1. **`output: 'export'`** —— Pages 没有 Node 运行时，必须静态导出
-2. **`.nojekyll`** —— 不放这个文件，`_next/` 资源全部 404。CI 里已自动生成
-3. **`basePath: '/RepoPilot'`** —— 站点在子路径下，仅 `PAGES=1` 时生效
-4. **静态搜索** —— `/api/search` 用 `staticGET` 在构建期烘索引，客户端用 `useStaticSearch`。因为 Pages 上跑不了服务端搜索
-
-## 一条硬性约束
-
-**`content/docs/` 里不能出现真实的技能入口文件。** CLI 在标准位置找不到时会递归全仓库搜索，示例文件会被当成第二个技能装进用户机器。
-
-要展示写法，用代码块：
-
-````md
-```yaml
----
-name: repo-pilot
-description: ...
----
-```
-````
-
-仓库根的 `.github/workflows/validate-skill.yml` 已钉死这条规则。
+版本更新入口是 `/changelog`，数据在 `src/lib/updates.ts`。同一天的功能合并，按日期倒序记录；年份与日期构成左侧时间线，正文自然撑开间距。使用中文功能标题与说明。

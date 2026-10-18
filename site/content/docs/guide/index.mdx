@@ -1,38 +1,45 @@
 ---
-title: 安装
-description: 安装完整的 RepoPilot，再从业务全貌到源码小问题逐步学习。
+title: 安装与第一条视频
+description: 从知识主题到静音成片
 ---
 
-复制完整 `skills/repo-pilot/`，保留 references、assets、scripts；更新先备份自定义规则，替换完整目录，项目知识保留。
+## 安装
 
-| 宿主 | 项目级 | 用户级 |
-| --- | --- | --- |
-| Codex | .agents/skills/repo-pilot/ | ~/.agents/skills/repo-pilot/ |
-| Claude Code | .claude/skills/repo-pilot/ | ~/.claude/skills/repo-pilot/ |
-
-## GitHub Marketplace
+当前 checkout 可直接安装完整 Skill：
 
 ```bash
-claude plugin marketplace add resinya/RepoPilot
-claude plugin install repo-pilot@repo-pilot --scope user
+npx skills add . --skill knowledge-motion --agent codex --global --copy
 ```
 
-取得的是远程已提交版本；本地改动发布后才可安装到其他机器。插件安装调用 `/repo-pilot:repo-pilot`，直接复制的独立Skill调用 `/repo-pilot`。
+Claude Code 把 `codex` 改为 `claude-code`；项目安装去掉 `--global`。复制安装时需要完整的 `skills/knowledge-motion/`，包括模板、脚本、锁文件和参考规则。
 
-## 使用
+本次改造发布到远程之后，才可通过远程仓库获取新 Skill：
+
+```bash
+npx skills add resinya/RepoPilot --skill knowledge-motion --agent codex --global --copy
+```
+
+已安装的旧 `repo-pilot` 需要移除或替换完整目录；仓库里的修改不会自动更新本机旧安装。
+
+## 给出主题
 
 ```text
-$repo-pilot 帮我熟悉一下这个项目
-$repo-pilot demo RPC 不会，先给最小示例
-$repo-pilot business 先讲业务框架与模块分工
-$repo-pilot trace 这个动作每步传什么、数据怎么变化
-$repo-pilot visualize 把内容集中在一页，不要一直点来点去
+用 $knowledge-motion 制作“钱去了哪里”，用模拟收支演示余额变化，20 秒。
 ```
 
-首次先收到相关技术/包关系清单和熟悉度提问。列出不会的名称或编号，Skill 会先生成目标根 `技术栈demo/README.md` 与每项 `<技术名>/README.md`，完整代码、运行流程和结果集中在该文；也可说“都熟悉/跳过/只在会话展示”。实际落地源码与安装、运行依具体授权。看完说“继续”回原分析位置。
+也可以提供知识稿、受众、时长和输出目录。Agent 整理内容、选择布局并编写分镜。
 
-可以直接说“文件太大，每轮只讲一个问题”“配置知道了，跳过”“继续”“返回”。默认会话展示；要保存明确说“整理成一份主文”。
+## 用例子直接验证
 
-可视化产出一页自包含 HTML，产出标准与自查清单见[业务可视化](/docs/guide/visualize)；常会用到的提法见[使用最佳实践](/docs/guide/practices)。
+```bash
+node skills/knowledge-motion/scripts/create-project.mjs --story skills/knowledge-motion/examples/shopping.json --project-root . --out out/knowledge-motion/shopping
+cd out/knowledge-motion/shopping
+npm ci
+npm run check
+npm run preview
+npm run render
+```
 
-首次静态读取，不自动启动项目或数据库。可选目录索引用Python3.10+，缺少时使用宿主搜索。
+要求 Node.js 20.19+、FFprobe 和 Chromium 系浏览器。首次安装需要网络。可设置 `REMOTION_BROWSER_EXECUTABLE` 和 `FFPROBE_PATH` 指定本机程序；路径只保存在运行环境中。
+
+先打开预览图，修正画面，再生成成片。视频与源码都保留在调用项目中。

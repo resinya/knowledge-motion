@@ -1,0 +1,6 @@
+node_modules/
+.cache/
+previews/
+video.mp4
+video.partial.mp4
+verification.json

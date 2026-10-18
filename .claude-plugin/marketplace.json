@@ -1,16 +1,16 @@
 {
-  "name": "repo-pilot",
-  "description": "RepoPilot skills for understanding and changing unfamiliar repositories",
+  "name": "knowledge-motion",
+  "description": "Knowledge Motion: dark infographics and silent knowledge videos",
   "owner": {
     "name": "resin",
     "url": "https://github.com/resinya"
   },
   "plugins": [
     {
-      "name": "repo-pilot",
+      "name": "knowledge-motion",
       "source": ".",
-      "description": "Evidence-backed repository onboarding, architecture exploration, change location, and guided learning",
-      "version": "0.6.0"
+      "description": "Knowledge, process and state-change animations exported as silent MP4 videos",
+      "version": "1.0.0"
     }
   ]
 }

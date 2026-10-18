@@ -1,6 +1,6 @@
 import { createGetUrl } from 'fumadocs-core/source';
 
-export const appName = 'RepoPilot';
+export const appName = 'Knowledge Motion';
 
 // GitHub Pages 项目站地址：https://<user>.github.io/<repo>/
 // 绑定自定义域名后，在部署环境配 NEXT_PUBLIC_SITE_URL 覆盖即可
@@ -30,7 +30,7 @@ function resolveSiteUrl(value: string | undefined): string {
     return url.pathname === '/' ? url.origin : url.origin + url.pathname;
   } catch {
     console.warn(
-      `[RepoPilot] NEXT_PUBLIC_SITE_URL 不是合法地址（收到 "${trimmed}"），已回退到 ${DEFAULT_SITE_URL}。`,
+      `[Knowledge Motion] NEXT_PUBLIC_SITE_URL 不是合法地址（收到 "${trimmed}"），已回退到 ${DEFAULT_SITE_URL}。`,
     );
     return DEFAULT_SITE_URL;
   }
@@ -38,16 +38,23 @@ function resolveSiteUrl(value: string | undefined): string {
 
 export const siteUrl = resolveSiteUrl(process.env.NEXT_PUBLIC_SITE_URL);
 
-export const siteTitle = 'RepoPilot · 陌生仓库探索 AI Skill';
+export const siteTitle = 'Knowledge Motion · 知识动态信息图 Skill';
 
 export const siteDescription =
-  'RepoPilot 是一个给 AI agent 用的仓库探索技能：先构建一张可导航的项目地图，' +
-  '再根据你当下的目标按需深入代码，产出架构分层、业务链路追踪与可执行的上手路径。' +
-  '支持 Claude Code、Codex、Cursor 等 agent，一行命令安装。';
+  '把任意领域的知识、分类与过程制作成深色动态信息图。' +
+  '固定分区、逐步聚焦、对象传递、结果保留，输出静音 MP4、可修改的 Remotion 与 SVG 源项目和分镜。';
 
 export const docsRoute = '/docs';
 export const docsImageRoute = '/og/docs';
 export const docsContentRoute = '/llms.mdx/docs';
+export const changelogRoute = '/changelog';
+export const examplesRoute = '/examples';
+
+// Next.js 的 public 图片不会自动加 basePath；与 Pages 构建配置保持一致。
+export function assetUrl(path: string) {
+  const basePath = process.env.PAGES === '1' ? '/RepoPilot' : '';
+  return `${basePath}/${path.replace(/^\/+/, '')}`;
+}
 
 export const gitConfig = {
   user: 'resinya',
@@ -63,17 +70,17 @@ export const categories = [
   {
     slug: 'guide',
     title: '指南',
-    description: '安装 RepoPilot 并跑通第一个任务。',
+    description: '安装 Skill，制作第一条静音知识视频。',
   },
   {
     slug: 'how-it-works',
     title: '原理',
-    description: '三层加载机制与为什么有时不触发。',
+    description: '从内容到分镜，再到按帧动画和视频导出。',
   },
   {
     slug: 'reference',
     title: '参考',
-    description: '目录结构、CLI 命令、常见问题。',
+    description: '分镜字段、布局、运行命令与媒体验收。',
   },
 ];
 

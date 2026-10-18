@@ -42,11 +42,11 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python: ['3.10', '3.14']
+        node: ['20', '22']
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-node@v4
         with:
-          python-version: ${{ matrix.python }}
-      - name: Test directory inventory and complete Skill copy
-        run: python -B -m unittest discover -s tests -p 'test_*.py' -v
+          node-version: ${{ matrix.node }}
+      - name: Test timeline, state continuity, portable Skill and media verification
+        run: node --test tests/knowledge-motion.test.mjs

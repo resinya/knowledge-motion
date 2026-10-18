@@ -1,11 +1,11 @@
 {
-  "name": "repo-pilot",
+  "name": "knowledge-motion",
   "interface": {
-    "displayName": "RepoPilot"
+    "displayName": "Knowledge Motion"
   },
   "plugins": [
     {
-      "name": "repo-pilot",
+      "name": "knowledge-motion",
       "source": {
         "source": "local",
         "path": "./"

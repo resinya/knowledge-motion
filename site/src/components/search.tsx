@@ -20,8 +20,8 @@ import {
  * 前者每次输入都去打 /api/search（需要服务端），后者构建期就把索引下载好，
  * 在浏览器里算——这正是 Pages 能跑起来的前提。
  */
-export default function StaticSearchDialog(props: SharedProps) {
-  const search = useStaticSearch();
+export default function StaticSearchDialog({ api, ...props }: SharedProps & { api?: string }) {
+  const search = useStaticSearch({ from: api });
 
   return (
     <SearchDialog {...search} {...props}>
@@ -32,7 +32,7 @@ export default function StaticSearchDialog(props: SharedProps) {
           <SearchDialogInput />
           <SearchDialogClose />
         </SearchDialogHeader>
-        <SearchDialogList />
+        {search.error ? <p role="status" className="p-6 text-sm text-fd-muted-foreground">搜索暂时不可用，请稍后重试。</p> : <SearchDialogList />}
       </SearchDialogContent>
     </SearchDialog>
   );

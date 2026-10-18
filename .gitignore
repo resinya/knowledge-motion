@@ -19,3 +19,15 @@ Thumbs.db
 # 本地工作区数据（含本机路径等私密信息，不进公开仓库）
 .workbuddy/
 docs/*
+
+# 本机预览、自动化截图与缓存
+.playwright-mcp/
+.cache/
+coverage/
+*.log
+__pycache__/
+*.py[cod]
+
+# 从根 assets/ 同步的网站静态副本（源素材需要提交）
+/site/public/brand/
+/site/public/examples/

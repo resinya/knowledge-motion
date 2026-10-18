@@ -1,7 +1,7 @@
 {
-  "name": "repo-pilot",
-  "version": "0.6.0",
-  "description": "Identify relevant technologies and package dependencies, ask about familiarity, teach minimal demos, then guide evidence-backed project exploration and development.",
+  "name": "knowledge-motion",
+  "version": "1.0.0",
+  "description": "Create dark knowledge motion infographics and silent MP4 videos with editable Remotion and SVG source.",
   "author": {
     "name": "resin",
     "url": "https://github.com/resinya"
@@ -10,10 +10,10 @@
   "repository": "https://github.com/resinya/RepoPilot",
   "license": "MIT",
   "keywords": [
-    "onboarding",
-    "code-exploration",
-    "architecture",
-    "repository-map"
+    "knowledge-video",
+    "motion-infographics",
+    "remotion",
+    "svg"
   ],
   "skills": "./skills/"
 }

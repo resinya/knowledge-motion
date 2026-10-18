@@ -1,107 +1,29 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RepoPilot — 陌生仓库探索 AI Skill</title>
-<meta name="description" content="自动探索项目结构、梳理技术架构、追踪业务链路，并按照真实开发流程指导新人上手的 AI Skill。支持 Claude Code、Codex、Cursor 等 agent。">
-<style>
-  :root {
-    --fg: #1c1c1a;
-    --muted: #5f5e5a;
-    --line: #e3e1da;
-    --bg: #fbfaf7;
-    --accent: #185fa5;
-    --code-bg: #f1efe8;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--fg);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
-                 "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-    line-height: 1.7;
-    -webkit-font-smoothing: antialiased;
-  }
-  main { max-width: 760px; margin: 0 auto; padding: 64px 24px 80px; }
-  .logo { width: 260px; max-width: 70%; display: block; margin: 0 auto 28px; border-radius: 12px; }
-  h1 { font-size: 26px; font-weight: 600; text-align: center; margin: 0 0 10px; letter-spacing: .5px; }
-  .tagline { text-align: center; color: var(--muted); font-size: 15px; margin: 0 0 40px; }
-  h2 { font-size: 17px; font-weight: 600; margin: 44px 0 14px; }
-  pre {
-    background: var(--code-bg);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 14px 16px;
-    overflow-x: auto;
-    font-size: 13px;
-  }
-  code {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  }
-  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
-  .card {
-    background: #fff; border: 1px solid var(--line);
-    border-radius: 12px; padding: 18px;
-  }
-  .card h3 { margin: 0 0 6px; font-size: 14px; font-weight: 600; }
-  .card p { margin: 0; font-size: 13px; color: var(--muted); }
-  ul { padding-left: 20px; margin: 0; }
-  li { margin: 6px 0; font-size: 14px; }
-  li code { background: var(--code-bg); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
-  .links { margin-top: 52px; padding-top: 24px; border-top: 1px solid var(--line);
-           text-align: center; font-size: 14px; }
-  .links a { color: var(--accent); text-decoration: none; margin: 0 10px; }
-  .links a:hover { text-decoration: underline; }
-  .note { font-size: 13px; color: var(--muted); margin-top: 10px; }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Knowledge Motion · 知识动态信息图 Skill</title>
+  <meta name="description" content="用固定分区、逐步聚焦和局部过程动画，把知识制作成静音 MP4。">
+  <style>
+    :root{color-scheme:dark;font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:#040914;color:#edf5ff}body{margin:0}main{max-width:850px;margin:auto;padding:80px 28px}h1{font-size:clamp(36px,6vw,62px);letter-spacing:-1px;margin:18px 0}h2{margin-top:45px;font-size:22px}p{line-height:1.9;color:#9fb2c8}a{color:#32c5ff}pre{padding:22px;border:1px solid #20354b;border-radius:14px;background:#0b1625;overflow:auto;line-height:1.8}.kicker{color:#31dbaf;letter-spacing:2px}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}.card{padding:24px;border:1px solid #20354b;border-radius:16px;background:#0b1625}.card h3{color:#32c5ff}footer{margin-top:70px;color:#8ca1b8;font-size:14px}
+  </style>
 </head>
-<body>
-<main>
-  <img class="logo" src="./assets/logoword.png" alt="RepoPilot">
-  <h1>RepoPilot</h1>
-  <p class="tagline">自动探索项目结构、梳理技术架构、追踪业务链路，并按照真实开发流程指导新人上手的 AI Skill</p>
-
-  <h2>安装</h2>
-  <pre><code>npx skills add resinya/RepoPilot --global --skill repo-pilot --yes --copy</code></pre>
-  <p class="note">装完后开一个新会话，直接对 agent 说话即可。若不装到全局，去掉 <code>--global</code> 就会装进当前项目。</p>
-
-  <h2>它做什么</h2>
+<body><main>
+  <div class="kicker">知识 · 动态图解</div>
+  <h1>Knowledge Motion</h1>
+  <p>把知识全貌留在画面里，用局部动作解释每一步如何发生。<br>深色动态信息图，静音 MP4，可修改的 Remotion＋SVG 源项目。</p>
   <div class="cards">
-    <div class="card">
-      <h3>项目地图</h3>
-      <p>先建一张可导航的地图，而不是把整个仓库解释一遍。职责标注来自真实引用关系，不从目录名臆测。</p>
-    </div>
-    <div class="card">
-      <h3>架构与链路</h3>
-      <p>识别分层与外部依赖边界，再从入口沿调用链一路走到数据落地，每个结论带文件路径锚点。</p>
-    </div>
-    <div class="card">
-      <h3>上手路径</h3>
-      <p>给出可执行的下一步动作，含 Windows 与 Linux 差异，而不是描述性的架构说明。</p>
-    </div>
+    <section class="card"><h3>分类速查</h3><p>稳定的类别配色，列表逐行聚焦，每行演示一个关系。</p></section>
+    <section class="card"><h3>连续过程</h3><p>卡片依次亮起，对象沿路径传递，完成结果保留。</p></section>
+    <section class="card"><h3>状态变化</h3><p>操作引起数值变化，每笔过程留下清楚记录。</p></section>
   </div>
-
-  <h2>试试这样说</h2>
-  <ul>
-    <li><code>帮我把这个仓库跑起来，告诉我每一步和可能卡住的地方。</code></li>
-    <li><code>帮我理清这个项目的架构，先给我一张地图。</code></li>
-    <li><code>我是新接手的人，告诉我按什么顺序看这份代码。</code></li>
-    <li><code>这条下单链路从哪里进、到哪里结束，中间有哪些分支。</code></li>
-  </ul>
-
-  <h2>为什么文档站不会被一起装走</h2>
-  <p class="note">
-    Skill 本体只放在仓库的 <code>skills/</code> 目录下。<code>skills</code> CLI 会先扫描、再只拷贝命中的那一个子目录，
-    所以本站源码永远不会被写进你的 agent 目录。仓库根也不会放 <code>SKILL.md</code>，避免遮蔽正式入口。
-  </p>
-
-  <div class="links">
-    <a href="https://github.com/resinya/RepoPilot">GitHub</a>
-    <a href="https://github.com/resinya/RepoPilot/blob/main/skills/repo-pilot/SKILL.md">技能详情</a>
-    <a href="https://github.com/resinya/RepoPilot#4-%E5%AE%89%E8%A3%85-installation">全部安装方式</a>
-  </div>
-</main>
-</body>
-</html>
+  <h2>这样调用</h2>
+  <pre>用 $knowledge-motion 制作“网购订单从付款到签收的过程”，
+20 秒，输出静音 MP4。</pre>
+  <p>默认 1080×1920、30 fps、20 秒。支持任意领域的知识主题或已有资料。</p>
+  <h2>从本地仓库安装</h2>
+  <pre>npx skills add . --skill knowledge-motion --agent codex --global --copy</pre>
+  <p>复制安装时保留完整 Skill 目录。首次渲染需要 Node.js、Chromium 和 FFprobe。</p>
+  <footer><a href="https://github.com/resinya/RepoPilot">源码与使用说明</a> · <a href="https://resinya.github.io/RepoPilot/docs/">制作指南</a></footer>
+</main></body></html>

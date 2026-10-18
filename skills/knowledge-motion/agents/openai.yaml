@@ -1,0 +1,4 @@
+interface:
+  display_name: "Knowledge Motion"
+  short_description: "把知识与过程制作成深色动态信息图，输出静音短视频及可修改源码"
+  default_prompt: "用 $knowledge-motion 把网购订单从付款到签收的过程制作成 20 秒深色动态信息图，输出静音 MP4。"

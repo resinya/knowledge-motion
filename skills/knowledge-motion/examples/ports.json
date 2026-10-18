@@ -1,0 +1,21 @@
+{
+  "title": "常用网络端口，一图速查",
+  "kicker": "网络知识 · 分类速查",
+  "subtitle": "常见默认配置；实际以服务设置为准",
+  "summary": "紫：基础服务 · 蓝：网页 · 绿：开发 · 橙：数据",
+  "layout": "list",
+  "duration": 20,
+  "steps": [
+    {"id":"ssh","badge":"22","label":"SSH","caption":"安全远程登录","result":"加密连接远程服务器","color":"purple","diagram":{"nodes":[{"id":"client","label":"客户端","icon":"screen"},{"id":"server","label":"服务器","icon":"server"}],"edges":[{"from":"client","to":"server","label":"加密连接"}]}},
+    {"id":"dns","badge":"53","label":"DNS","caption":"域名解析为地址","result":"域名查询得到网络地址","color":"purple","diagram":{"nodes":[{"id":"name","label":"域名","icon":"globe"},{"id":"resolver","label":"解析服务","icon":"server"}],"edges":[{"from":"name","to":"resolver","label":"查询"}]}},
+    {"id":"http","badge":"80","label":"HTTP","caption":"网页请求与响应","result":"网页内容通过 HTTP 传递","color":"cyan","diagram":{"nodes":[{"id":"browser","label":"浏览器","icon":"screen"},{"id":"web","label":"网站","icon":"server"}],"edges":[{"from":"browser","to":"web","label":"请求"}]}},
+    {"id":"https","badge":"443","label":"HTTPS","caption":"加密的网页连接","result":"连接通过 TLS 保护","color":"cyan","diagram":{"nodes":[{"id":"browser","label":"浏览器","icon":"lock"},{"id":"web","label":"网站","icon":"server"}],"edges":[{"from":"browser","to":"web","label":"加密传输"}]}},
+    {"id":"dev","badge":"3000","label":"开发服务","caption":"示例端口，可自行配置","result":"开发服务使用示例端口 3000","color":"green","diagram":{"nodes":[{"id":"browser","label":"本机","icon":"screen"},{"id":"dev","label":"开发服务","icon":"document"}],"edges":[{"from":"browser","to":"dev","label":"预览"}]}},
+    {"id":"alternate","badge":"8080","label":"HTTP 备用","caption":"常见备用网页端口","result":"HTTP 服务也可配置其他端口","color":"green","diagram":{"nodes":[{"id":"client","label":"客户端","icon":"screen"},{"id":"service","label":"网页服务","icon":"server"}],"edges":[{"from":"client","to":"service","label":":8080"}]}},
+    {"id":"mysql","badge":"3306","label":"MySQL","caption":"关系型数据服务","result":"应用连接 MySQL 数据库","color":"orange","diagram":{"nodes":[{"id":"app","label":"应用","icon":"document"},{"id":"db","label":"数据库","icon":"database"}],"edges":[{"from":"app","to":"db","label":"SQL"}]}},
+    {"id":"postgres","badge":"5432","label":"PostgreSQL","caption":"关系型数据服务","result":"应用连接 PostgreSQL 数据库","color":"orange","diagram":{"nodes":[{"id":"app","label":"应用","icon":"document"},{"id":"db","label":"数据库","icon":"database"}],"edges":[{"from":"app","to":"db","label":"SQL"}]}},
+    {"id":"redis","badge":"6379","label":"Redis","caption":"内存数据服务","result":"应用读取或写入内存数据","color":"orange","diagram":{"nodes":[{"id":"app","label":"应用","icon":"document"},{"id":"cache","label":"内存数据","icon":"server"}],"edges":[{"from":"app","to":"cache","label":"读写"}]}},
+    {"id":"mongo","badge":"27017","label":"MongoDB","caption":"文档型数据服务","result":"应用读写文档型数据","color":"orange","diagram":{"nodes":[{"id":"app","label":"应用","icon":"document"},{"id":"db","label":"文档库","icon":"database"}],"edges":[{"from":"app","to":"db","label":"文档"}]}}
+  ],
+  "sources": [{"title":"IANA 服务名与端口号注册表","url":"https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml"}]
+}

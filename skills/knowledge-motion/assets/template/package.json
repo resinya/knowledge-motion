@@ -1,0 +1,20 @@
+{
+  "name": "knowledge-motion-video",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {"node": ">=20.19"},
+  "scripts": {
+    "check": "node scripts/render.mjs --check",
+    "preview": "node scripts/render.mjs --preview",
+    "render": "node scripts/render.mjs",
+    "verify": "node scripts/verify-video.mjs video.mp4 story.json"
+  },
+  "dependencies": {
+    "@remotion/bundler": "4.0.536",
+    "@remotion/renderer": "4.0.536",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "remotion": "4.0.536"
+  }
+}

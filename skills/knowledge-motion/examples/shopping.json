@@ -1,0 +1,16 @@
+{
+  "title": "一个包裹，怎样来到你手中",
+  "kicker": "日常知识 · 六步流程",
+  "subtitle": "用一笔模拟订单，看懂从付款到签收",
+  "summary": "订单信息先流转，实物包裹再抵达",
+  "layout": "grid",
+  "duration": 20,
+  "steps": [
+    {"id":"pay","label":"下单付款","caption":"付款成功，订单发给商家","result":"商家收到已付款订单","input":"支付 ¥128","color":"cyan","diagram":{"nodes":[{"id":"buyer","label":"买家","icon":"person"},{"id":"store","label":"商家","icon":"store"}],"edges":[{"from":"buyer","to":"store","label":"付款订单"}]}},
+    {"id":"accept","label":"商家接单","caption":"核对商品，安排仓库备货","result":"仓库收到备货任务","color":"cyan","diagram":{"nodes":[{"id":"store","label":"商家","icon":"store"},{"id":"warehouse","label":"仓库","icon":"home"}],"edges":[{"from":"store","to":"warehouse","label":"备货任务"}]}},
+    {"id":"pick","label":"仓库拣货","caption":"按照订单取出对应商品","result":"商品与订单完成匹配","color":"cyan","diagram":{"nodes":[{"id":"stock","label":"货架","icon":"database"},{"id":"goods","label":"待发商品","icon":"package"}],"edges":[{"from":"stock","to":"goods","label":"拣出商品"}]}},
+    {"id":"pack","label":"打包出库","caption":"包装商品，交给快递揽收","result":"快递收到包裹","color":"cyan","diagram":{"nodes":[{"id":"goods","label":"包裹","icon":"package"},{"id":"courier","label":"快递","icon":"truck"}],"edges":[{"from":"goods","to":"courier","label":"交接"}]}},
+    {"id":"deliver","label":"物流运输","caption":"包裹到达城市，再安排派送","result":"包裹送达收货地址","color":"cyan","diagram":{"nodes":[{"id":"hub","label":"转运点","icon":"home"},{"id":"courier","label":"配送员","icon":"truck"},{"id":"address","label":"收货地","icon":"home"}],"edges":[{"from":"hub","to":"courier","label":"配送"},{"from":"courier","to":"address","label":"送达"}]}},
+    {"id":"receive","label":"签收完成","caption":"买家收到包裹，订单完成","result":"订单留下已签收记录","color":"green","diagram":{"nodes":[{"id":"parcel","label":"包裹","icon":"package"},{"id":"buyer","label":"买家","icon":"person"}],"edges":[{"from":"parcel","to":"buyer","label":"签收"}]}}
+  ]
+}

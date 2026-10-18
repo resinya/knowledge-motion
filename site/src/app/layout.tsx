@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import './global.css';
 import { Provider } from '@/components/provider';
-import { siteDescription, siteTitle, siteUrl } from '@/lib/shared';
+import { assetUrl, siteDescription, siteTitle, siteUrl } from '@/lib/shared';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -10,6 +10,10 @@ export const metadata: Metadata = {
     template: `%s | ${siteTitle}`,
   },
   description: siteDescription,
+  icons: {
+    icon: assetUrl('/brand/knowledge-motion-logo.png'),
+    apple: assetUrl('/brand/knowledge-motion-logo.png'),
+  },
 };
 
 /**
@@ -21,7 +25,7 @@ export default function Layout({ children }: LayoutProps<'/'>) {
   return (
     <html lang="zh-CN" suppressHydrationWarning>
       <body className="flex flex-col min-h-screen">
-        <Provider>{children}</Provider>
+        <Provider searchIndexUrl={assetUrl('/api/search')}>{children}</Provider>
       </body>
     </html>
   );

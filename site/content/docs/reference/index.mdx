@@ -1,57 +1,43 @@
 ---
-title: 参考
-description: Skill 目录职责、集中输出和开发检查。
+title: 分镜与运行参考
+description: 三种布局、节点、路径和状态字段
 ---
 
-## 职责
+必填字段是 `title`、`layout`、`steps`。默认参数为 `duration: 20`、`fps: 30`、`width: 1080`、`height: 1920`；可添加 `kicker`、`subtitle`、`summary` 和资料 `sources`。
 
-| 位置 | 用途 |
-| --- | --- |
-| SKILL.md | 15个任务路由、学习链路和操作边界 |
-| references/workflows/ | 各任务的输入、步骤、产出和停点 |
-| references/adapters/ | 按真实入口适配项目类型与框架 |
-| references/contracts/ | 证据、讲解、集中输出、质量与任务衔接 |
-| references/examples/ | 业务学习、集中地图与其他任务的正反例 |
-| assets/templates/ | 主文、单页业务地图与按需专题模板 |
-| assets/templates/business-map.html | 单页地图：内容由内嵌 JSON 驱动，字段写法见下面“页面内容” |
-| scripts/inventory.py | 可选只读目录候选扫描 |
-| evals/ | 合成项目及行为评估用例 |
+每步包含唯一的 `id`、短 `label`、动作 `caption`、完成 `result` 和 `diagram`。可选 `color`、逐字输入 `input`；列表可设置 `badge`。
 
-一个安装入口按需加载资料，不另装子 Skill。通用规则和项目事实分开。
-
-## 默认集中保存
-
-默认会话展示，要求保存时以目标 `.repopilot/00-start-here.md` 为完整主文，内部目录串起业务、架构、技术、代表场景、规范和开发路线。只需滚动和定位即可读完整个问题。
-
-独立库学习、机制、需求卡、附录和可视化按需增加；交互成果默认 `maps/<主题>/index.html`，同页展示职责与完整当前场景。只要一份独立页面时无需再生成一份重复说明或索引。
-
-技术预备是单独的保存约定：提问告知默认目录后，用户选择陌生项生成根 `技术栈demo/README.md` 与每项 `<技术名>/README.md`。一项的概念、树、完整代码、流程、命令/结果、API和项目映射放在一起；不强制另建项目主文。基础 demo、项目 library 和内部 deep 属于同一 Skill。
-
-个人进度放 local；更新前先读已有笔记，不自动删历史01/02，不写回Skill。
-
-## 页面内容
-
-单页地图是零构建、零依赖的自包含 HTML，内容是文件内一个 JSON 块。关键字段：
-
-| 字段 | 作用 | 注意 |
-| --- | --- | --- |
-| `participants` | 时序图泳道 | `role` 超过 15 个汉字会被截断 |
-| `nodes` | 模块职责树，从 `root` 展开 | 子节点是包含关系；循环引用不再展开 |
-| `scenarios[].steps[]` | 3～5 个大阶段 | 编号跨阶段连续递增，与箭头共用计数器 |
-| `steps[].messages[]` | 每条箭头 | `case: false` 降级为轻量卡 |
-| `messages[].shape` / `fields` | 数据形状与字段来源 | 来源未知写“未记录”，不猜 |
-| `sources[]` | 来源与验证范围 | 必须含模拟值声明与未核验项 |
-
-JSON 里的 `<` 必须写成 `\u003c`，否则 `</script>` 提前闭合导致整页失效。完整的字段契约与验收清单见[业务可视化](/docs/guide/visualize)。
-
-## 验收
-
-关键结论可追源码；结构关系不当执行顺序；数据逐跳有含义。每轮源码带读一个问题，支持跳过；核心内容不要求点开多个模块才能读懂。
-
-页面语法、交互、布局与真实业务运行是不同验证范围，分别报告。没有运行服务不能把静态链路叫跑通。
-
-```bash
-node scripts/validate-skill-metadata.mjs
-python -B -m unittest discover -s tests -p 'test_*.py' -v
-claude plugin validate .
+```json
+{
+  "id": "pay",
+  "label": "下单付款",
+  "caption": "付款后通知商家",
+  "result": "商家收到已付款订单",
+  "diagram": {
+    "nodes": [
+      {"id":"buyer","label":"买家","icon":"person"},
+      {"id":"store","label":"商家","icon":"store"}
+    ],
+    "edges": [{"from":"buyer","to":"store","label":"付款通知"}]
+  }
+}
 ```
+
+以上是一个步骤片段。节点可同时指定 0–1 范围的 `x`、`y`；连线按数组顺序展开和传递对象。
+
+| 布局 | 数量 | 特殊字段 |
+| --- | --- | --- |
+| list | 2–10 行 | badge；类别配色 |
+| grid | 2–6 步 | 可选 input |
+| state | 2–8 步 | 顶层 metrics；每步 changes |
+
+state 指标使用 `id`、`label`、`initial`，可选 `prefix`、`suffix`。`changes` 的数字表示该步完成后的绝对值，未提到的指标保持原值。
+
+完整契约与示例位于仓库 `skills/knowledge-motion/references/story-contract.md` 和 `examples/`。
+
+| 命令 | 作用 |
+| --- | --- |
+| npm run check | 校验分镜并同步 storyboard.md |
+| npm run preview | 生成关键帧 PNG |
+| npm run render | 导出并核验静音 MP4 |
+| npm run verify | 独立核验已有视频 |

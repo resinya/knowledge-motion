@@ -1,7 +1,7 @@
 {
-  "name": "repo-pilot",
-  "version": "0.6.0",
-  "description": "Identify relevant technologies and package dependencies, ask about familiarity, teach minimal demos, then guide evidence-backed project exploration and development.",
+  "name": "knowledge-motion",
+  "version": "1.0.0",
+  "description": "Turn knowledge, processes and state changes into dark motion infographics and silent MP4 videos with editable Remotion and SVG source.",
   "author": {
     "name": "resin",
     "url": "https://github.com/resinya"
@@ -10,28 +10,28 @@
   "repository": "https://github.com/resinya/RepoPilot",
   "license": "MIT",
   "keywords": [
-    "onboarding",
-    "code-exploration",
-    "architecture",
-    "repository-map"
+    "knowledge-video",
+    "motion-infographics",
+    "remotion",
+    "svg"
   ],
   "skills": "./skills/",
   "interface": {
-    "displayName": "RepoPilot",
-    "shortDescription": "Repository exploration and onboarding workflow",
-    "longDescription": "Identifies relevant technologies and asks about familiarity first, teaches selected unfamiliar technologies through minimal demos, then resumes architecture and business exploration at the original goal.",
+    "displayName": "Knowledge Motion",
+    "shortDescription": "Knowledge motion infographics and silent videos",
+    "longDescription": "Create dark infographics with fixed sections, step-by-step focus, object transfers and persistent results. Export silent MP4 videos, editable source projects and storyboards.",
     "developerName": "resin",
     "category": "Development",
     "capabilities": [
-      "Project mapping",
-      "Architecture analysis",
-      "Business-flow tracing"
+      "Knowledge infographics",
+      "Process animation",
+      "Silent MP4 rendering"
     ],
     "websiteURL": "https://resinya.github.io/RepoPilot/",
     "defaultPrompt": [
-      "Help me run this repository.",
-      "Map out this project's architecture for me.",
-      "Trace how this business flow runs end to end."
+      "Make a 20-second silent infographic about how an online order reaches the buyer.",
+      "Animate this classification as a dark infographic.",
+      "Show how these operations change the system state."
     ]
   }
 }

@@ -1,13 +1,13 @@
 {
-  "name": "repopilot-site",
-  "version": "0.0.43",
+  "name": "knowledge-motion-site",
+  "version": "1.0.0",
   "private": true,
   "engines": {
     "node": ">=22.4"
   },
   "scripts": {
-    "build": "next build",
-    "dev": "next dev",
+    "build": "node scripts/sync-assets.mjs && next build",
+    "dev": "node scripts/sync-assets.mjs && next dev",
     "start": "next start",
     "types:check": "next typegen && tsc --noEmit"
   },
