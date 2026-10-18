@@ -1,6 +1,6 @@
 # Knowledge Motion 文档站
 
-沿用当前 GitHub 仓库与 Pages 路径 `https://resinya.github.io/RepoPilot/`，产品内容已改为知识动态信息图与静音视频 Skill。
+官网：https://resinya.github.io/knowledge-motion/
 
 ```bash
 pnpm install
@@ -8,12 +8,14 @@ pnpm dev
 pnpm build
 ```
 
-Node.js 22.4+。本地开发不设置 `PAGES`；GitHub Pages 构建使用 `PAGES=1`，保留 `/RepoPilot` 子路径。需要自定义域名时设置 `NEXT_PUBLIC_SITE_URL`。
+需要 Node.js 22.4+。本地开发使用根路径；Pages 构建设置 `PAGES=1`，本地默认发布路径为 `/knowledge-motion`。
 
-正文位于 `content/docs/`，导航和元数据位于 `src/lib/shared.ts`。不要在站点里创建 SKILL.md；正式入口位于仓库 `skills/knowledge-motion/`。
+CI 通过 `actions/configure-pages` 获取实际的 `PAGES_BASE_PATH` 和 `NEXT_PUBLIC_SITE_URL`。Next.js、图片、视频及搜索索引共享 `site.config.mjs` 的路径配置。更换仓库名或域名时，以 Pages 返回的地址为准。
 
-品牌图片、案例封面和三条精选视频统一放在根目录 `assets/`；dev/build 会运行 `scripts/sync-assets.mjs`，复制到 public 下供网站使用。这些生成副本不提交。只有精选案例作为官网素材保留，实验过程仍放在忽略的 `out/`。
+构建后运行 `pnpm check:export --base-path /knowledge-motion`，检查导出页面的资源前缀与文件是否存在；CI 使用 Pages 返回的路径检查，通过后才上传部署。
 
-效果案例入口是 `/examples`，内容在 `src/lib/examples.ts`，视频支持在线播放、进度拖动与下载。
+正文在 `content/docs/`，导航在 `src/lib/layout.shared.tsx`。正式 Skill 位于根目录 `skills/knowledge-motion/`。
 
-版本更新入口是 `/changelog`，数据在 `src/lib/updates.ts`。同一天的功能合并，按日期倒序记录；年份与日期构成左侧时间线，正文自然撑开间距。使用中文功能标题与说明。
+品牌图片、封面和三条精选视频来自根目录 `assets/`；dev/build 自动同步到 `public/`，这些生成副本不提交。实验产物放在忽略的 `out/`。
+
+效果案例入口是 `/examples`，内容在 `src/lib/examples.ts`；版本更新入口是 `/changelog`，内容在 `src/lib/updates.ts`。

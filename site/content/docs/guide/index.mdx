@@ -13,13 +13,11 @@ npx skills add . --skill knowledge-motion --agent codex --global --copy
 
 Claude Code 把 `codex` 改为 `claude-code`；项目安装去掉 `--global`。复制安装时需要完整的 `skills/knowledge-motion/`，包括模板、脚本、锁文件和参考规则。
 
-本次改造发布到远程之后，才可通过远程仓库获取新 Skill：
+从远程仓库安装：
 
 ```bash
-npx skills add resinya/RepoPilot --skill knowledge-motion --agent codex --global --copy
+npx skills add resinya/knowledge-motion --skill knowledge-motion --agent codex --global --copy
 ```
-
-已安装的旧 `repo-pilot` 需要移除或替换完整目录；仓库里的修改不会自动更新本机旧安装。
 
 ## 给出主题
 

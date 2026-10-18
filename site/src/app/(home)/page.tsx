@@ -40,7 +40,7 @@ export default function HomePage() {
 
       <section className="home-start" aria-labelledby="start-title">
         <div><h2 id="start-title" className="section-title">从一个主题开始</h2><p>安装后，在对话中调用 <code>$knowledge-motion</code>。</p></div>
-        <div className="install-command"><pre><code>npx skills add resinya/RepoPilot --global --skill knowledge-motion --copy</code></pre><Link href={`${docsRoute}/guide`}>安装与使用 <ArrowRight size={14} aria-hidden="true" /></Link></div>
+        <div className="install-command"><pre><code>npx skills add resinya/knowledge-motion --global --skill knowledge-motion --copy</code></pre><Link href={`${docsRoute}/guide`}>安装与使用 <ArrowRight size={14} aria-hidden="true" /></Link></div>
       </section>
     </div>
   );

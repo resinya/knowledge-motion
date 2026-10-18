@@ -9,7 +9,8 @@
     "build": "node scripts/sync-assets.mjs && next build",
     "dev": "node scripts/sync-assets.mjs && next dev",
     "start": "next start",
-    "types:check": "next typegen && tsc --noEmit"
+    "types:check": "next typegen && tsc --noEmit",
+    "check:export": "node scripts/verify-export.mjs"
   },
   "dependencies": {
     "cn": "^0.4.0",

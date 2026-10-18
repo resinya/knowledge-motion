@@ -1,10 +1,11 @@
 import { createGetUrl } from 'fumadocs-core/source';
+import { defaultSiteUrl, githubRepository, pagesBasePath } from '../../site.config.mjs';
 
 export const appName = 'Knowledge Motion';
 
 // GitHub Pages 项目站地址：https://<user>.github.io/<repo>/
 // 绑定自定义域名后，在部署环境配 NEXT_PUBLIC_SITE_URL 覆盖即可
-const DEFAULT_SITE_URL = 'https://resinya.github.io/RepoPilot';
+const DEFAULT_SITE_URL = defaultSiteUrl;
 
 /**
  * 归一化 NEXT_PUBLIC_SITE_URL。
@@ -52,13 +53,12 @@ export const examplesRoute = '/examples';
 
 // Next.js 的 public 图片不会自动加 basePath；与 Pages 构建配置保持一致。
 export function assetUrl(path: string) {
-  const basePath = process.env.PAGES === '1' ? '/RepoPilot' : '';
-  return `${basePath}/${path.replace(/^\/+/, '')}`;
+  return `${pagesBasePath}/${path.replace(/^\/+/, '')}`;
 }
 
 export const gitConfig = {
-  user: 'resinya',
-  repo: 'RepoPilot',
+  user: githubRepository.owner,
+  repo: githubRepository.name,
   branch: 'main',
 };
 

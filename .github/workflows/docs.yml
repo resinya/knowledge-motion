@@ -26,10 +26,14 @@ jobs:
       run:
         working-directory: site
     env:
-      # site/next.config.mjs 读这个变量决定是否加 basePath
+      # Next.js 与静态资源共同启用 Pages 路径
       PAGES: '1'
     steps:
       - uses: actions/checkout@v4
+
+      - name: 读取 Pages 发布地址
+        id: pages
+        uses: actions/configure-pages@v5
 
       - uses: pnpm/action-setup@v4
         with:
@@ -47,7 +51,13 @@ jobs:
         run: pnpm install
 
       - name: 构建静态站点
+        env:
+          PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          NEXT_PUBLIC_SITE_URL: ${{ steps.pages.outputs.base_url }}
         run: pnpm build
+
+      - name: 检查发布路径与静态资源
+        run: pnpm check:export --base-path="${{ steps.pages.outputs.base_path }}"
 
       # GitHub Pages 默认用 Jekyll 处理，会忽略下划线开头的目录，
       # 不放这个文件 _next/ 下的 JS/CSS 全部 404 —— 这是部署 Next.js 到 Pages 最经典的坑
