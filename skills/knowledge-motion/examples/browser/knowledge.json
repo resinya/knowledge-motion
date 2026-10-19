@@ -1,0 +1,1309 @@
+{
+  "schemaVersion": 2,
+  "title": "输入网址后发生什么",
+  "audience": "第一次学习浏览器与网络的初学者",
+  "questions": [
+    "网址怎样变成要连接的服务器地址？",
+    "TCP 三次握手每次是谁发给谁，双方状态怎样变化？",
+    "HTTPS 怎样确认服务器身份并保护 HTTP 数据？",
+    "HTML 和 CSS 怎样在持续下载时变成屏幕上的页面？"
+  ],
+  "conditions": [
+    "教学模拟：输入 https://example.test/；example.test 是本次选用的测试主机名，假定实验环境已配置可返回地址的 DNS 与可通过客户端验证的 HTTPS 端点，未执行真实访问或测量。",
+    "示例取得一个可用 IP，不演示多个地址选择、IPv4/IPv6 竞速、代理、CDN 路由、丢包重传或失败重试。",
+    "首次连接：没有可复用连接；浏览器、操作系统与所用递归解析器均无本例相关 DNS 缓存。",
+    "主路径采用新建 TCP、TLS 1.3 完整服务器认证握手和协商成功的 HTTP/2；没有会话恢复、0-RTT、客户端证书或 HelloRetryRequest。",
+    "没有可直接回答本次导航的 HTTP 缓存或 Service Worker 响应，没有重定向，也没有阻塞 HTML 解析的脚本。",
+    "示例服务器返回状态 200 的 HTML；HTML 包含同源外部 /style.css；CSS 通过已经建立的 HTTP/2 连接请求。",
+    "HTML 到达、增量解析、资源发现及 CSS 下载可以重叠；模块顺序是讲解结构，不能当作所有模块完成后才启动下一模块的时间屏障。",
+    "TCP 报文与状态使用 x、y 作为双方初始序号符号；SYN 消耗一个序号。事件分镜不规定实际分包、绝对耗时或必须额外等待一个往返。",
+    "渲染描述采用 DOM、CSSOM、样式、布局、绘制及合成的教学模型；不假设每个元素都拥有独立 GPU 图层。",
+    "缓存命中、连接复用、HTTP/3、脚本影响与可交互性仅作条件分支；这些扩展不同时插入本例主路径。"
+  ],
+  "sources": [
+    {
+      "id": "scenario",
+      "title": "本次浏览器导航教学模拟条件",
+      "kind": "simulation",
+      "summary": "网址、DNS 成功、服务端能力、返回内容及不命中缓存等均为本次示例设定，不是抓包或性能实测结论。"
+    },
+    {
+      "id": "mdn-url",
+      "title": "MDN：What is a URL?",
+      "kind": "official",
+      "url": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Howto/Web_mechanics/What_is_a_URL",
+      "summary": "网址中的协议、主机、端口与资源路径。",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "mdn-browser",
+      "title": "MDN：Populating the page: how browsers work",
+      "kind": "official",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/How_browsers_work",
+      "summary": "导航、DNS、建立连接、获取响应、增量解析、预加载扫描及绘制合成。",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "mdn-render",
+      "title": "MDN：Critical rendering path",
+      "kind": "official",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Critical_rendering_path",
+      "summary": "HTML 到 DOM，CSS 到 CSSOM，随后生成渲染树并布局绘制；脚本可影响解析和 DOM。",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "rfc-dns",
+      "title": "RFC 1034：Domain Names — Concepts and Facilities",
+      "kind": "official",
+      "url": "https://www.rfc-editor.org/rfc/rfc1034.html#section-5.3.3",
+      "summary": "解析器的缓存检查、向名称服务器查询及跟随委派的解析算法。",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "rfc-tcp",
+      "title": "RFC 9293：Transmission Control Protocol",
+      "kind": "official",
+      "url": "https://www.rfc-editor.org/rfc/rfc9293.html#section-3.5",
+      "summary": "TCP 建连消息、状态转换与 SYN 的序号规则；另参见第 3.3.2 节。",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "rfc-tls",
+      "title": "RFC 8446：The Transport Layer Security Protocol Version 1.3",
+      "kind": "official",
+      "url": "https://www.rfc-editor.org/rfc/rfc8446.html#section-2",
+      "summary": "TLS 1.3 完整握手中的参数与密钥协商、服务器认证、Finished 和受保护的应用数据。",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "rfc-h2",
+      "title": "RFC 9113：HTTP/2",
+      "kind": "official",
+      "url": "https://www.rfc-editor.org/rfc/rfc9113.html#section-3.2",
+      "summary": "HTTPS 中的 ALPN、连接前言、HEADERS/DATA 及同一连接上的多个流。",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "rfc-h3",
+      "title": "RFC 9114：HTTP/3",
+      "kind": "official",
+      "url": "https://www.rfc-editor.org/rfc/rfc9114.html#section-1.2",
+      "summary": "HTTP/3 使用 QUIC；QUIC 集成 TLS 1.3，不能套用 TCP 三次握手路线。",
+      "accessedAt": "2026-10-19"
+    }
+  ],
+  "objects": [
+    {
+      "id": "browser",
+      "label": "浏览器客户端",
+      "color": "cyan",
+      "kind": "actor"
+    },
+    {
+      "id": "resolver",
+      "label": "DNS 解析服务",
+      "color": "purple",
+      "kind": "actor"
+    },
+    {
+      "id": "server",
+      "label": "网站服务器",
+      "color": "green",
+      "kind": "actor"
+    },
+    {
+      "id": "url",
+      "label": "网址",
+      "color": "orange",
+      "kind": "data"
+    },
+    {
+      "id": "address",
+      "label": "可用 IP 地址",
+      "color": "purple",
+      "kind": "data"
+    },
+    {
+      "id": "tcp-channel",
+      "label": "TCP 连接",
+      "color": "orange",
+      "kind": "channel"
+    },
+    {
+      "id": "tls-channel",
+      "label": "TLS 安全通道",
+      "color": "green",
+      "kind": "channel"
+    },
+    {
+      "id": "http-message",
+      "label": "HTTP 消息",
+      "color": "orange",
+      "kind": "data"
+    },
+    {
+      "id": "html",
+      "label": "HTML 字节流",
+      "color": "orange",
+      "kind": "data"
+    },
+    {
+      "id": "css",
+      "label": "CSS 字节流",
+      "color": "purple",
+      "kind": "data"
+    },
+    {
+      "id": "dom",
+      "label": "DOM 内容树",
+      "color": "cyan",
+      "kind": "structure"
+    },
+    {
+      "id": "cssom",
+      "label": "CSSOM 样式规则树",
+      "color": "purple",
+      "kind": "structure"
+    },
+    {
+      "id": "render-tree",
+      "label": "渲染树与计算样式",
+      "color": "green",
+      "kind": "structure"
+    },
+    {
+      "id": "geometry",
+      "label": "元素位置与尺寸",
+      "color": "green",
+      "kind": "data"
+    },
+    {
+      "id": "pixels",
+      "label": "页面像素",
+      "color": "red",
+      "kind": "data"
+    },
+    {
+      "id": "script",
+      "label": "JavaScript",
+      "color": "orange",
+      "kind": "program"
+    }
+  ],
+  "modules": [
+    "navigation",
+    "dns",
+    "tcp",
+    "tls",
+    "http",
+    "render"
+  ],
+  "nodes": [
+    {
+      "id": "navigation",
+      "title": "确定访问目标",
+      "goal": "把地址栏输入转为导航目标，分清协议、主机与资源路径。",
+      "objects": [
+        "browser",
+        "url"
+      ],
+      "inputs": [
+        "用户输入的网址"
+      ],
+      "outputs": [
+        "协议、主机、端口、路径"
+      ],
+      "detail": "core",
+      "sourceRefs": [
+        {
+          "sourceId": "mdn-url",
+          "claim": "URL 的各部分分别描述协议、主机、端口和资源路径。",
+          "locator": "Basics: anatomy of a URL"
+        },
+        {
+          "sourceId": "mdn-browser",
+          "claim": "用户在地址栏输入 URL 是导航的起点。",
+          "locator": "Navigation"
+        }
+      ],
+      "displayGoal": "把网址拆成协议、主机与路径"
+    },
+    {
+      "id": "navigation-target",
+      "title": "拆开网址",
+      "goal": "本例从 https://example.test/ 得到 HTTPS、主机 example.test、默认端口 443 和路径 /；主机名交给解析，路径保留给 HTTP 请求。",
+      "objects": [
+        "browser",
+        "url"
+      ],
+      "inputs": [
+        "https://example.test/"
+      ],
+      "outputs": [
+        "待解析主机 example.test",
+        "目标端口 443",
+        "请求路径 /"
+      ],
+      "parentId": "navigation",
+      "detail": "core",
+      "sourceRefs": [
+        {
+          "sourceId": "mdn-url",
+          "claim": "域名标识主机；HTTPS 标准端口为 443；路径指定资源位置。",
+          "locator": "Authority; Path to resource"
+        },
+        {
+          "sourceId": "scenario",
+          "claim": "example.test 与根路径 / 是本次教学输入，未证明该网址可从公网访问。"
+        }
+      ]
+    },
+    {
+      "id": "dns",
+      "title": "找到服务器地址",
+      "goal": "把主机名解析为可用于连接的 IP；DNS 解决寻找地址的问题，不提供网页正文。",
+      "objects": [
+        "browser",
+        "resolver",
+        "address"
+      ],
+      "inputs": [
+        "待解析主机 example.test"
+      ],
+      "outputs": [
+        "可用 IP 地址"
+      ],
+      "detail": "core",
+      "sourceRefs": [
+        {
+          "sourceId": "mdn-browser",
+          "claim": "DNS 查询将域名解析成连接服务器所需的 IP 地址。",
+          "locator": "DNS lookup"
+        }
+      ],
+      "displayGoal": "主机名换成可连接的地址"
+    },
+    {
+      "id": "dns-request",
+      "title": "发出解析查询",
+      "goal": "本例相关缓存均未命中，浏览器通过系统的解析路径请求 DNS 解析服务查找主机地址。",
+      "objects": [
+        "browser",
+        "resolver",
+        "url"
+      ],
+      "inputs": [
+        "待解析主机 example.test",
+        "相关缓存无答案"
+      ],
+      "outputs": [
+        "主机地址查询"
+      ],
+      "parentId": "dns",
+      "detail": "core",
+      "sourceRefs": [
+        {
+          "sourceId": "mdn-browser",
+          "claim": "连接网站前需完成地址解析；DNS 结果可以被缓存。",
+          "locator": "DNS lookup"
+        },
+        {
+          "sourceId": "scenario",
+          "claim": "浏览器、系统与所用解析器均没有本例相关 DNS 缓存。"
+        }
+      ]
+    },
+    {
+      "id": "dns-answer",
+      "title": "取得可用地址",
+      "goal": "本例已配置的 DNS 解析服务返回可用地址，浏览器随后用该地址与端口发起连接。",
+      "objects": [
+        "resolver",
+        "browser",
+        "address"
+      ],
+      "inputs": [
+        "主机地址查询",
+        "实验环境配置的 DNS 答案"
+      ],
+      "outputs": [
+        "可用 IP 地址与端口 443"
+      ],
+      "parentId": "dns",
+      "detail": "core",
+      "sourceRefs": [
+        {
+          "sourceId": "mdn-browser",
+          "claim": "取得 IP 地址后可以开始建立连接。",
+          "locator": "TCP handshake"
+        },
+        {
+          "sourceId": "scenario",
+          "claim": "解析成功是实验条件；不把 example.test 画成真实公网根域逐级委派的实测结果。"
+        }
+      ]
+    },
+    {
+      "id": "dns-cache",
+      "title": "地址缓存命中",
+      "goal": "若相关 DNS 缓存已有仍可使用的答案，地址解析可以直接使用缓存结果，本例不走此分支。",
+      "objects": [
+        "browser",
+        "resolver",
+        "address"
+      ],
+      "inputs": [
+        "主机名",
+        "可用的 DNS 缓存答案"
+      ],
+      "outputs": [
+        "可用 IP 地址"
+      ],
+      "parentId": "dns",
+      "detail": "extension",
+      "sourceRefs": [
+        {
+          "sourceId": "rfc-dns",
+          "claim": "解析器首先检查本地信息，并可使用缓存回答查询。",
+          "locator": "5.3.3"
+        }
+      ]
+    },
+    {
+      "id": "dns-delegation",
+      "title": "解析器继续问谁",
+      "goal": "对需要继续查询的普通域名，解析器会向已知名称服务器查询，并按返回的委派继续寻找答案；缓存与已知服务器会影响起点，不能固定宣称每次都从根开始。",
+      "objects": [
+        "resolver",
+        "address"
+      ],
+      "inputs": [
+        "普通域名查询",
+        "无可直接使用的答案"
+      ],
+      "outputs": [
+        "沿委派取得的地址或解析错误"
+      ],
+      "parentId": "dns",
+      "detail": "extension",
+      "sourceRefs": [
+        {
+          "sourceId": "rfc-dns",
+          "claim": "解析算法选择名称服务器、发送查询，并在响应为委派时更新服务器列表继续处理。",
+          "locator": "5.3.3"
+        },
+        {
+          "sourceId": "scenario",
+          "claim": "公网委派仅作扩展，不作为本例测试主机名的既定解析路线。"
+        }
+      ]
+    },
+    {
+      "id": "tcp",
+      "title": "建立 TCP 连接",
+      "goal": "通过三次带方向的消息确认双方初始序号并进入可传输有序字节流的连接状态。服务器起初监听，客户端主动发起。",
+      "objects": [
+        "browser",
+        "server",
+        "tcp-channel"
+      ],
+      "inputs": [
+        "可用 IP 地址与端口 443"
+      ],
+      "outputs": [
+        "双方建立的 TCP 连接"
+      ],
+      "detail": "core",
+      "sourceRefs": [
+        {
+          "sourceId": "rfc-tcp",
+          "claim": "普通主动/被动建连采用三次握手；客户端和监听服务器经历不同状态。",
+          "locator": "3.5"
+        }
+      ],
+      "displayGoal": "三次交互确认连接两端"
+    },
+    {
+      "id": "tcp-syn",
+      "title": "① 客户端发 SYN",
+      "goal": "客户端→服务器：发送 SYN，序号为 x；客户端进入 SYN-SENT，服务端在收到前仍为 LISTEN。SYN 占用一个序号。",
+      "objects": [
+        "browser",
+        "server",
+        "tcp-channel"
+      ],
+      "inputs": [
+        "客户端发起连接",
+        "服务器处于 LISTEN"
+      ],
+      "outputs": [
+        "客户端发出的 SYN(seq=x)",
+        "客户端 SYN-SENT"
+      ],
+      "parentId": "tcp",
+      "detail": "core",
+      "sourceRefs": [
+        {
+          "sourceId": "rfc-tcp",
+          "claim": "主动打开会发送 SYN 并进入 SYN-SENT；SYN 占用序号空间。",
+          "locator": "3.5; 3.3.2"
+        }
+      ]
+    },
+    {
+      "id": "tcp-syn-ack",
+      "title": "② 服务器回 SYN+ACK",
+      "goal": "服务器收到 SYN 后→客户端：发送 SYN+ACK(seq=y, ack=x+1)，进入 SYN-RECEIVED；确认号 x+1 表示已收到对方占一个序号的 SYN，此时客户端仍在等待响应。",
+      "objects": [
+        "browser",
+        "server",
+        "tcp-channel"
+      ],
+      "inputs": [
+        "服务器收到 SYN(seq=x)",
+        "客户端 SYN-SENT"
+      ],
+      "outputs": [
+        "服务器发出的 SYN+ACK(seq=y, ack=x+1)",
+        "服务器 SYN-RECEIVED"
+      ],
+      "parentId": "tcp",
+      "detail": "core",
+      "sourceRefs": [
+        {
+          "sourceId": "rfc-tcp",
+          "claim": "监听端收到 SYN 后用 SYN+ACK 确认对方序号并进入 SYN-RECEIVED。",
+          "locator": "3.5; 3.3.2"
+        }
+      ]
+    },
+    {
+      "id": "tcp-ack",
+      "title": "③ 客户端回 ACK",
+      "goal": "客户端收到 SYN+ACK 后→服务器：发送 ACK(seq=x+1, ack=y+1)，客户端进入 ESTABLISHED；服务器收到最后这个 ACK 后才进入 ESTABLISHED。两端不是在同一个瞬间改变状态。",
+      "objects": [
+        "browser",
+        "server",
+        "tcp-channel"
+      ],
+      "inputs": [
+        "客户端收到 SYN+ACK(seq=y, ack=x+1)",
+        "服务器 SYN-RECEIVED"
+      ],
+      "outputs": [
+        "客户端发送 ACK(seq=x+1, ack=y+1)并进入 ESTABLISHED",
+        "服务器收到 ACK 后进入 ESTABLISHED",
+        "双方建立的 TCP 连接"
+      ],
+      "parentId": "tcp",
+      "detail": "core",
+      "sourceRefs": [
+        {
+          "sourceId": "rfc-tcp",
+          "claim": "客户端确认服务器 SYN 后进入 ESTABLISHED；服务器收到确认其 SYN 的 ACK 后进入 ESTABLISHED。",
+          "locator": "3.5"
+        }
+      ]
+    },
+    {
+      "id": "tcp-reuse",
+      "title": "复用已有连接",
+      "goal": "若浏览器已有符合复用条件的 HTTP/2 连接，可在该连接上创建新请求流，无须为每次请求重新演示 TCP 与 TLS 握手。本例没有这种连接。",
+      "objects": [
+        "browser",
+        "server",
+        "tcp-channel",
+        "tls-channel"
+      ],
+      "inputs": [
+        "可复用的已初始化 HTTP/2 连接",
+        "新的资源请求"
+      ],
+      "outputs": [
+        "可直接承载新请求的 HTTP/2 流"
+      ],
+      "parentId": "tcp",
+      "detail": "extension",
+      "sourceRefs": [
+        {
+          "sourceId": "rfc-h2",
+          "claim": "HTTP/2 连接可以并发承载多个相互独立的流；连接可被复用。",
+          "locator": "5; 9.1; 9.1.1"
+        }
+      ]
+    },
+    {
+      "id": "tls",
+      "title": "建立 HTTPS 安全通道",
+      "goal": "在 TCP 字节流上协商 TLS 1.3、认证服务器并建立共享密钥材料，使随后的 HTTP 数据获得机密性与完整性保护。",
+      "objects": [
+        "browser",
+        "server",
+        "tcp-channel",
+        "tls-channel"
+      ],
+      "inputs": [
+        "双方建立的 TCP 连接"
+      ],
+      "outputs": [
+        "可承载受保护 HTTP/2 数据的 TLS 通道"
+      ],
+      "detail": "core",
+      "sourceRefs": [
+        {
+          "sourceId": "rfc-tls",
+          "claim": "TLS 握手协商参数、认证端点并建立保护应用数据所需的密钥材料。",
+          "locator": "1; 2"
+        }
+      ],
+      "displayGoal": "认证身份，建立安全通道"
+    },
+    {
+      "id": "tls-hello",
+      "title": "协商参数与密钥",
+      "goal": "客户端发 ClientHello（含支持的应用协议），服务器回 ServerHello；双方选择 TLS 1.3 参数，并用交换的密钥份额分别计算共享密钥材料，不以明文发送会话密钥。",
+      "objects": [
+        "browser",
+        "server",
+        "tcp-channel",
+        "tls-channel"
+      ],
+      "inputs": [
+        "TCP 字节流",
+        "支持的 TLS 参数与密钥份额"
+      ],
+      "outputs": [
+        "协商好的 TLS 1.3 参数",
+        "共享密钥材料"
+      ],
+      "parentId": "tls",
+      "detail": "core",
+      "sourceRefs": [
+        {
+          "sourceId": "rfc-tls",
+          "claim": "完整握手通过 ClientHello/ServerHello 协商算法和密钥交换信息；后续握手消息受保护。",
+          "locator": "2, Figure 1"
+        },
+        {
+          "sourceId": "rfc-h2",
+          "claim": "在 HTTPS 中通过 TLS 的 ALPN 扩展协商 HTTP/2，协议标识为 h2。",
+          "locator": "3.1; 3.2"
+        },
+        {
+          "sourceId": "scenario",
+          "claim": "TLS 1.3、完整握手与协商成功的 h2 是本例条件。"
+        }
+      ]
+    },
+    {
+      "id": "tls-authenticate",
+      "title": "验证身份并完成握手",
+      "goal": "服务器通过受保护的 EncryptedExtensions 确认本例的 h2 选择，并提供证书、签名证明与 Finished；客户端验证服务器认证信息和握手完整性后发送自己的 Finished。随后以应用流量密钥保护 HTTP 数据。",
+      "objects": [
+        "browser",
+        "server",
+        "tls-channel"
+      ],
+      "inputs": [
+        "协商好的 TLS 参数与共享密钥材料",
+        "服务器认证与 Finished 消息"
+      ],
+      "outputs": [
+        "经过服务器认证且应用协议为 h2 的安全通道",
+        "可承载受保护 HTTP/2 数据的 TLS 通道"
+      ],
+      "parentId": "tls",
+      "detail": "core",
+      "sourceRefs": [
+        {
+          "sourceId": "rfc-tls",
+          "claim": "完整握手包含 Certificate、CertificateVerify 和 Finished，用于身份认证、密钥确认与握手完整性。",
+          "locator": "2, Figure 1; 4.4"
+        },
+        {
+          "sourceId": "scenario",
+          "claim": "服务器认证通过且不要求客户端证书；失败分支不属于本例主路径。"
+        },
+        {
+          "sourceId": "rfc-tls",
+          "claim": "TLS 1.3 的 EncryptedExtensions 位于 ServerHello 之后，并以握手流量密钥保护，用于传递应用协议等协商信息。",
+          "locator": "2, Figure 1; 4.3.1"
+        },
+        {
+          "sourceId": "rfc-h2",
+          "claim": "HTTPS 中使用 ALPN 选择 HTTP/2，标识为 h2。",
+          "locator": "3.1; 3.2"
+        }
+      ]
+    },
+    {
+      "id": "http",
+      "title": "交换页面与资源",
+      "goal": "在 TLS 通道中按 HTTP/2 交换请求和响应；拿到的是页面和样式等资源内容，浏览器还要处理这些内容才能显示页面。",
+      "objects": [
+        "browser",
+        "server",
+        "tls-channel",
+        "http-message",
+        "html",
+        "css"
+      ],
+      "inputs": [
+        "可承载受保护 HTTP/2 数据的 TLS 通道",
+        "请求路径 /"
+      ],
+      "outputs": [
+        "HTML 字节流",
+        "CSS 字节流"
+      ],
+      "detail": "core",
+      "sourceRefs": [
+        {
+          "sourceId": "rfc-h2",
+          "claim": "HTTP/2 使用帧在流中承载 HTTP 字段和内容，多个流共享连接。",
+          "locator": "5; 6; 8"
+        }
+      ],
+      "displayGoal": "交换页面内容与后续资源"
+    },
+    {
+      "id": "http-preface",
+      "title": "初始化 HTTP/2",
+      "goal": "TLS 协商完成后，双方发送 HTTP/2 连接前言和初始 SETTINGS；这是本例新连接的初始化，并非每个资源请求都重做一次。",
+      "objects": [
+        "browser",
+        "server",
+        "http-message",
+        "tls-channel"
+      ],
+      "inputs": [
+        "已选中 h2 的 TLS 通道"
+      ],
+      "outputs": [
+        "已初始化的 HTTP/2 连接"
+      ],
+      "parentId": "http",
+      "detail": "core",
+      "sourceRefs": [
+        {
+          "sourceId": "rfc-h2",
+          "claim": "TLS 协商完成后双方发送连接前言；客户端和服务器前言包含初始 SETTINGS。",
+          "locator": "3.2; 3.4"
+        }
+      ]
+    },
+    {
+      "id": "http-request",
+      "title": "请求 HTML",
+      "goal": "浏览器在新流发送根路径的 GET 请求，HTTP/2 使用 HEADERS 承载 :method、:scheme、:authority 与 :path 等字段。本例请求的是 GET https://example.test/。",
+      "objects": [
+        "browser",
+        "server",
+        "http-message",
+        "tls-channel"
+      ],
+      "inputs": [
+        "已初始化的 HTTP/2 连接",
+        "主机 example.test 与路径 /"
+      ],
+      "outputs": [
+        "服务器收到的根文档 GET 请求"
+      ],
+      "parentId": "http",
+      "detail": "core",
+      "sourceRefs": [
+        {
+          "sourceId": "rfc-h2",
+          "claim": "HTTP/2 请求的伪首部字段描述方法、方案、权限部分和路径；HTTP 字段由 HEADERS 承载。",
+          "locator": "8.3.1; 6.2"
+        },
+        {
+          "sourceId": "scenario",
+          "claim": "主机与请求路径来自本次示例输入。"
+        }
+      ]
+    },
+    {
+      "id": "http-html",
+      "title": "响应持续到达",
+      "goal": "服务器返回响应字段和正文；本例响应是 200、HTML 内容。HTML 在 HTTP/2 DATA 帧中持续到达，浏览器拿到足够字节就能开始解析，无须等整份 HTML 传输完成。",
+      "objects": [
+        "server",
+        "browser",
+        "http-message",
+        "html"
+      ],
+      "inputs": [
+        "服务器收到的根文档 GET 请求"
+      ],
+      "outputs": [
+        "持续到达的 HTML 字节流"
+      ],
+      "parentId": "http",
+      "detail": "core",
+      "sourceRefs": [
+        {
+          "sourceId": "rfc-h2",
+          "claim": "HTTP 响应字段和内容通过流上的 HEADERS 与 DATA 传递。",
+          "locator": "8.1; 6.1; 6.2"
+        },
+        {
+          "sourceId": "mdn-browser",
+          "claim": "浏览器可以在接收 HTML 的同时开始解析。",
+          "locator": "Parsing"
+        },
+        {
+          "sourceId": "scenario",
+          "claim": "状态 200 与 HTML 内容类型由教学示例设定。"
+        }
+      ]
+    },
+    {
+      "id": "http-css",
+      "title": "并行获取 CSS",
+      "goal": "发现 /style.css 后，浏览器通过同一条 HTTP/2 连接的新流请求它；CSS 下载可以与剩余 HTML 的接收和解析重叠，同源并不要求重新建立一条 TCP 连接。",
+      "objects": [
+        "browser",
+        "server",
+        "http-message",
+        "css",
+        "tls-channel"
+      ],
+      "inputs": [
+        "被发现的同源 /style.css 地址",
+        "已初始化的 HTTP/2 连接"
+      ],
+      "outputs": [
+        "持续到达的 CSS 字节流"
+      ],
+      "parentId": "http",
+      "detail": "core",
+      "sourceRefs": [
+        {
+          "sourceId": "rfc-h2",
+          "claim": "HTTP/2 的多个独立流可以共享同一连接。",
+          "locator": "5"
+        },
+        {
+          "sourceId": "mdn-browser",
+          "claim": "预加载扫描器能发现外部 CSS 等资源并触发请求。",
+          "locator": "Preload scanner"
+        },
+        {
+          "sourceId": "scenario",
+          "claim": "外部样式表为同源 /style.css，且使用本例已经建立的连接。"
+        }
+      ]
+    },
+    {
+      "id": "http-three",
+      "title": "HTTP/3 另一条路",
+      "goal": "若实际选择 HTTP/3，HTTP 消息运行在 QUIC 上，QUIC 集成 TLS 1.3；此时连接建立不能照搬本例的 TCP 三次握手。此分支不在本次主路径中执行。",
+      "objects": [
+        "browser",
+        "server",
+        "http-message",
+        "html"
+      ],
+      "inputs": [
+        "实际选择 HTTP/3 的访问条件"
+      ],
+      "outputs": [
+        "经 QUIC 传输的 HTTP/3 请求与响应"
+      ],
+      "parentId": "http",
+      "detail": "extension",
+      "sourceRefs": [
+        {
+          "sourceId": "rfc-h3",
+          "claim": "HTTP/3 将 HTTP 语义映射到 QUIC；QUIC 集成 TLS 1.3。",
+          "locator": "1.2; 2"
+        }
+      ]
+    },
+    {
+      "id": "render",
+      "title": "把资源变成页面",
+      "goal": "浏览器把收到的内容组织成结构与样式，计算几何位置，绘制并合成可见画面。这些工作可随着更多内容到达而反复进行。",
+      "objects": [
+        "browser",
+        "html",
+        "css",
+        "dom",
+        "cssom",
+        "render-tree",
+        "geometry",
+        "pixels"
+      ],
+      "inputs": [
+        "持续到达的 HTML 字节流",
+        "持续到达的 CSS 字节流"
+      ],
+      "outputs": [
+        "当前可见页面的画面"
+      ],
+      "detail": "core",
+      "sourceRefs": [
+        {
+          "sourceId": "mdn-render",
+          "claim": "关键渲染路径包括 DOM、CSSOM、渲染树、布局和绘制。",
+          "locator": "The critical rendering path"
+        },
+        {
+          "sourceId": "mdn-browser",
+          "claim": "绘制与合成将页面内容提交为可见画面。",
+          "locator": "Render; Compositing"
+        }
+      ],
+      "displayGoal": "结构与样式一步步变成像素"
+    },
+    {
+      "id": "render-dom",
+      "title": "HTML 生成 DOM",
+      "goal": "浏览器解码到达的 HTML 字节，把字符识别成标记，再创建具有父子关系的 DOM 节点；DOM 表达内容结构，还不是屏幕像素。",
+      "objects": [
+        "browser",
+        "html",
+        "dom"
+      ],
+      "inputs": [
+        "已到达且可解码的 HTML 字节"
+      ],
+      "outputs": [
+        "不断增长的 DOM 内容树"
+      ],
+      "parentId": "render",
+      "detail": "core",
+      "sourceRefs": [
+        {
+          "sourceId": "mdn-render",
+          "claim": "HTML 经字节、字符、标记及节点处理后形成分层 DOM；DOM 增量构建。",
+          "locator": "Document Object Model"
+        }
+      ]
+    },
+    {
+      "id": "render-discover",
+      "title": "发现后续资源",
+      "goal": "HTML 处理期间，解析器或预加载扫描器发现外部资源地址；本例发现指向 /style.css 的 link，立即为 CSS 请求提供输入，不等整份 DOM 完成。",
+      "objects": [
+        "browser",
+        "html",
+        "css"
+      ],
+      "inputs": [
+        "已到达的 HTML 内容",
+        "本例样式表 link"
+      ],
+      "outputs": [
+        "被发现的同源 /style.css 地址"
+      ],
+      "parentId": "render",
+      "detail": "core",
+      "sourceRefs": [
+        {
+          "sourceId": "mdn-browser",
+          "claim": "预加载扫描器会扫描内容并请求 CSS 等高优先级外部资源。",
+          "locator": "Preload scanner"
+        },
+        {
+          "sourceId": "scenario",
+          "claim": "HTML 含有同源 /style.css 的样式表引用。"
+        }
+      ]
+    },
+    {
+      "id": "render-cssom",
+      "title": "CSS 生成 CSSOM",
+      "goal": "浏览器解析收到的 CSS，将选择器与声明组织为 CSSOM 样式规则结构；仅有规则还不足以知道每个页面元素最终应怎样显示。",
+      "objects": [
+        "browser",
+        "css",
+        "cssom"
+      ],
+      "inputs": [
+        "持续到达的 CSS 字节流"
+      ],
+      "outputs": [
+        "可用于样式计算的 CSSOM"
+      ],
+      "parentId": "render",
+      "detail": "core",
+      "sourceRefs": [
+        {
+          "sourceId": "mdn-render",
+          "claim": "CSS 被处理成 CSSOM；它与 DOM 一同参与后续渲染树构建。",
+          "locator": "CSS Object Model"
+        }
+      ]
+    },
+    {
+      "id": "render-style",
+      "title": "计算样式与渲染树",
+      "goal": "浏览器把 CSS 规则应用到 DOM，处理层叠与继承并计算样式，得到参与显示的渲染结构；display:none 的内容不进入该教学模型中的渲染树。",
+      "objects": [
+        "browser",
+        "dom",
+        "cssom",
+        "render-tree"
+      ],
+      "inputs": [
+        "当前 DOM 内容树",
+        "可用于样式计算的 CSSOM"
+      ],
+      "outputs": [
+        "渲染树与计算样式"
+      ],
+      "parentId": "render",
+      "detail": "core",
+      "sourceRefs": [
+        {
+          "sourceId": "mdn-render",
+          "claim": "DOM 与 CSSOM 用于构建渲染树；未显示的节点不进入渲染树。",
+          "locator": "Render tree"
+        }
+      ]
+    },
+    {
+      "id": "render-layout",
+      "title": "计算位置与尺寸",
+      "goal": "浏览器依据渲染结构、视口和布局规则，计算当前元素的宽高与位置。这里回答的是每块内容放在哪、多大，还不是最终画面。",
+      "objects": [
+        "browser",
+        "render-tree",
+        "geometry"
+      ],
+      "inputs": [
+        "渲染树与计算样式",
+        "视口大小"
+      ],
+      "outputs": [
+        "元素位置与尺寸"
+      ],
+      "parentId": "render",
+      "detail": "core",
+      "sourceRefs": [
+        {
+          "sourceId": "mdn-render",
+          "claim": "布局根据渲染树计算每个对象的大小与位置，并受视口尺寸影响。",
+          "locator": "Layout"
+        }
+      ]
+    },
+    {
+      "id": "render-paint",
+      "title": "绘制并生成像素",
+      "goal": "浏览器按样式与几何信息绘制文字、背景和边框等，并将绘制结果光栅化为可显示的像素内容；实现可能对内容分层处理。",
+      "objects": [
+        "browser",
+        "render-tree",
+        "geometry",
+        "pixels"
+      ],
+      "inputs": [
+        "渲染树与计算样式",
+        "元素位置与尺寸"
+      ],
+      "outputs": [
+        "可供合成的已绘制像素内容"
+      ],
+      "parentId": "render",
+      "detail": "core",
+      "sourceRefs": [
+        {
+          "sourceId": "mdn-browser",
+          "claim": "绘制将布局内容变成屏幕像素，可能将页面分层以优化重绘。",
+          "locator": "Paint"
+        }
+      ]
+    },
+    {
+      "id": "render-composite",
+      "title": "合成可见画面",
+      "goal": "浏览器按正确顺序组合当前已绘制内容并呈现画面；这一刻说明内容可以被看到，不说明所有资源、脚本或交互初始化都已完成。",
+      "objects": [
+        "browser",
+        "pixels"
+      ],
+      "inputs": [
+        "可供合成的已绘制像素内容"
+      ],
+      "outputs": [
+        "当前可见页面的画面"
+      ],
+      "parentId": "render",
+      "detail": "core",
+      "sourceRefs": [
+        {
+          "sourceId": "mdn-browser",
+          "claim": "合成会以正确顺序组合已绘制的层；交互可用性还受到后续执行工作的影响。",
+          "locator": "Compositing; Interactivity"
+        }
+      ]
+    },
+    {
+      "id": "render-script",
+      "title": "脚本可能改变流程",
+      "goal": "如果遇到需要阻塞解析的脚本，HTML 解析可能暂停；脚本也可能修改 DOM 或样式并再次触发样式、布局或绘制。本例通过条件排除了阻塞解析的脚本。",
+      "objects": [
+        "browser",
+        "script",
+        "dom",
+        "cssom"
+      ],
+      "inputs": [
+        "需要执行的 JavaScript",
+        "当前文档和样式"
+      ],
+      "outputs": [
+        "可能改变的 DOM 或样式",
+        "可能重新安排的渲染工作"
+      ],
+      "parentId": "render",
+      "detail": "extension",
+      "sourceRefs": [
+        {
+          "sourceId": "mdn-render",
+          "claim": "JavaScript 可以修改 DOM，阻塞解析的脚本会影响关键渲染路径。",
+          "locator": "JavaScript and the critical rendering path"
+        },
+        {
+          "sourceId": "scenario",
+          "claim": "主路径没有阻塞 HTML 解析的脚本。"
+        }
+      ]
+    },
+    {
+      "id": "render-interactivity",
+      "title": "看到与能操作",
+      "goal": "首个可见画面只是显示阶段的结果；页面能否及时响应还要看交互逻辑是否就绪、主线程是否能处理输入，不能仅凭有像素就宣布全部交互完成。",
+      "objects": [
+        "browser",
+        "script",
+        "pixels"
+      ],
+      "inputs": [
+        "当前可见画面",
+        "后续脚本与输入处理状态"
+      ],
+      "outputs": [
+        "有边界的结论：页面已可见，完整可交互性尚未证明"
+      ],
+      "parentId": "render",
+      "detail": "extension",
+      "sourceRefs": [
+        {
+          "sourceId": "mdn-browser",
+          "claim": "可见内容出现后，主线程工作仍可能影响用户交互响应。",
+          "locator": "Interactivity"
+        }
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "type": "depends-on",
+      "from": "navigation-target",
+      "to": "dns-request",
+      "label": "主机名进入地址解析"
+    },
+    {
+      "type": "precedes",
+      "from": "dns-request",
+      "to": "dns-answer",
+      "label": "本例查询成功返回"
+    },
+    {
+      "type": "depends-on",
+      "from": "dns-answer",
+      "to": "tcp-syn",
+      "label": "得到可连接地址"
+    },
+    {
+      "type": "precedes",
+      "from": "tcp-syn",
+      "to": "tcp-syn-ack",
+      "label": "服务器收到 SYN"
+    },
+    {
+      "type": "precedes",
+      "from": "tcp-syn-ack",
+      "to": "tcp-ack",
+      "label": "客户端收到 SYN+ACK"
+    },
+    {
+      "type": "depends-on",
+      "from": "tcp-ack",
+      "to": "tls-hello",
+      "label": "TCP 可承载握手字节"
+    },
+    {
+      "type": "precedes",
+      "from": "tls-hello",
+      "to": "tls-authenticate",
+      "label": "协商后验证身份与握手"
+    },
+    {
+      "type": "depends-on",
+      "from": "tls-authenticate",
+      "to": "http-preface",
+      "label": "在选中 h2 的安全通道初始化"
+    },
+    {
+      "type": "depends-on",
+      "from": "http-preface",
+      "to": "http-request",
+      "label": "新连接已经初始化"
+    },
+    {
+      "type": "precedes",
+      "from": "http-request",
+      "to": "http-html",
+      "label": "本例服务器产生文档响应"
+    },
+    {
+      "type": "depends-on",
+      "from": "http-html",
+      "to": "render-dom",
+      "label": "首段可解码字节到达即可开始"
+    },
+    {
+      "type": "parallel",
+      "from": "http-html",
+      "to": "render-dom",
+      "label": "剩余 HTML 下载与增量 DOM 构建可重叠"
+    },
+    {
+      "type": "depends-on",
+      "from": "http-html",
+      "to": "render-discover",
+      "label": "已到达的 HTML 可供扫描"
+    },
+    {
+      "type": "parallel",
+      "from": "render-dom",
+      "to": "render-discover",
+      "label": "DOM 构建与资源扫描可交错推进"
+    },
+    {
+      "type": "depends-on",
+      "from": "render-discover",
+      "to": "http-css",
+      "label": "发现地址后发起样式请求"
+    },
+    {
+      "type": "depends-on",
+      "from": "http-preface",
+      "to": "http-css",
+      "label": "CSS 流使用本例已建立的 HTTP/2 连接"
+    },
+    {
+      "type": "parallel",
+      "from": "render-dom",
+      "to": "http-css",
+      "label": "继续解析 HTML 与下载 CSS 可以重叠"
+    },
+    {
+      "type": "parallel",
+      "from": "http-html",
+      "to": "http-css",
+      "label": "两个响应流可共享同一连接推进"
+    },
+    {
+      "type": "depends-on",
+      "from": "http-css",
+      "to": "render-cssom",
+      "label": "CSS 字节交给样式解析"
+    },
+    {
+      "type": "depends-on",
+      "from": "render-dom",
+      "to": "render-style",
+      "label": "样式计算需要当前 DOM"
+    },
+    {
+      "type": "depends-on",
+      "from": "render-cssom",
+      "to": "render-style",
+      "label": "样式计算需要相应 CSS 规则"
+    },
+    {
+      "type": "depends-on",
+      "from": "render-style",
+      "to": "render-layout",
+      "label": "按计算样式布局"
+    },
+    {
+      "type": "depends-on",
+      "from": "render-layout",
+      "to": "render-paint",
+      "label": "知道位置尺寸后绘制"
+    },
+    {
+      "type": "depends-on",
+      "from": "render-paint",
+      "to": "render-composite",
+      "label": "组合已绘制内容"
+    },
+    {
+      "type": "conditional",
+      "from": "navigation-target",
+      "to": "dns-cache",
+      "label": "仅当存在可用 DNS 缓存"
+    },
+    {
+      "type": "conditional",
+      "from": "dns-cache",
+      "to": "tcp-syn",
+      "label": "命中地址且仍需建立连接"
+    },
+    {
+      "type": "conditional",
+      "from": "dns-request",
+      "to": "dns-delegation",
+      "label": "仅当普通域名需继续跟随 DNS 委派"
+    },
+    {
+      "type": "conditional",
+      "from": "navigation-target",
+      "to": "tcp-reuse",
+      "label": "仅当已有符合条件的 HTTP/2 连接"
+    },
+    {
+      "type": "conditional",
+      "from": "tcp-reuse",
+      "to": "http-request",
+      "label": "已初始化连接可直接创建新请求流"
+    },
+    {
+      "type": "conditional",
+      "from": "navigation-target",
+      "to": "http-three",
+      "label": "仅当实际选择 HTTP/3，替代本例传输路线"
+    },
+    {
+      "type": "conditional",
+      "from": "render-dom",
+      "to": "render-script",
+      "label": "仅当文档含需要处理的脚本"
+    },
+    {
+      "type": "conditional",
+      "from": "render-script",
+      "to": "render-style",
+      "label": "脚本改变 DOM 或样式时可触发更新"
+    },
+    {
+      "type": "conditional",
+      "from": "render-composite",
+      "to": "render-interactivity",
+      "label": "需要进一步判断是否能及时响应"
+    }
+  ],
+  "workflow": {
+    "host": "Codex",
+    "mode": "native",
+    "reason": "由当前 Codex 主代理完成主题与示例范围选择，原生知识整理子代理接收已核验官方资料并补核 TLS/HTTP 来源，输出可编辑知识结构供后续故事规划；未调用其他宿主或进行真实网络性能测量。",
+    "review": "主 Agent 已等待原生整理任务完成，审核逐节点来源、25个核心节点、6个扩展、模块输入输出、TCP状态与资源获取并行关系；确认示例域名和响应是假设，首屏可见不等于所有交互完成。"
+  }
+}

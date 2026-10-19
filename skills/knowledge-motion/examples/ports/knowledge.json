@@ -1,0 +1,227 @@
+{
+  "schemaVersion": 2,
+  "title": "常用网络端口，一图速查",
+  "audience": "初学者",
+  "questions": [
+    "端口用于区分什么？",
+    "哪些值来自注册表，哪些只是默认配置或示例？"
+  ],
+  "conditions": [
+    "默认配置可以修改；端口号不能证明实际运行的服务。",
+    "3000 是本片的本地开发示例，不表示统一标准。"
+  ],
+  "sources": [
+    {
+      "id": "iana",
+      "title": "IANA 服务名与端口号注册表",
+      "kind": "official",
+      "url": "https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "mysql-doc",
+      "title": "MySQL port 系统变量",
+      "kind": "official",
+      "url": "https://dev.mysql.com/doc/refman/8.4/en/server-system-variables.html#sysvar_port",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "postgres-doc",
+      "title": "PostgreSQL 连接设置",
+      "kind": "official",
+      "url": "https://www.postgresql.org/docs/current/runtime-config-connection.html",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "redis-doc",
+      "title": "Redis 网络安全",
+      "kind": "official",
+      "url": "https://redis.io/docs/latest/operate/oss_and_stack/management/security/",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "mongo-doc",
+      "title": "MongoDB 默认端口",
+      "kind": "official",
+      "url": "https://www.mongodb.com/docs/manual/reference/default-mongodb-port/",
+      "accessedAt": "2026-10-19"
+    },
+    {
+      "id": "scenario",
+      "title": "本片开发服务示例",
+      "kind": "simulation"
+    }
+  ],
+  "objects": [
+    {
+      "id": "ssh",
+      "label": "SSH",
+      "color": "purple"
+    },
+    {
+      "id": "dns",
+      "label": "DNS",
+      "color": "purple"
+    },
+    {
+      "id": "http",
+      "label": "HTTP",
+      "color": "cyan"
+    },
+    {
+      "id": "https",
+      "label": "HTTPS",
+      "color": "cyan"
+    },
+    {
+      "id": "dev",
+      "label": "开发服务示例",
+      "color": "green"
+    },
+    {
+      "id": "alternate",
+      "label": "HTTP 备用",
+      "color": "green"
+    },
+    {
+      "id": "mysql",
+      "label": "MySQL",
+      "color": "orange"
+    },
+    {
+      "id": "postgres",
+      "label": "PostgreSQL",
+      "color": "orange"
+    },
+    {
+      "id": "redis",
+      "label": "Redis",
+      "color": "orange"
+    },
+    {
+      "id": "mongo",
+      "label": "MongoDB",
+      "color": "orange"
+    }
+  ],
+  "modules": [
+    "basic",
+    "web",
+    "development",
+    "data"
+  ],
+  "nodes": [
+    {
+      "id": "basic",
+      "title": "基础服务",
+      "goal": "远程管理与域名查询",
+      "objects": [
+        "ssh",
+        "dns"
+      ],
+      "inputs": [
+        "服务类型"
+      ],
+      "outputs": [
+        "常见端口及其含义"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "iana",
+          "claim": "ssh 注册22；domain 注册53。"
+        }
+      ],
+      "detail": "core"
+    },
+    {
+      "id": "web",
+      "title": "网页访问",
+      "goal": "请求与加密网页通信",
+      "objects": [
+        "http",
+        "https"
+      ],
+      "inputs": [
+        "服务类型"
+      ],
+      "outputs": [
+        "常见端口及其含义"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "iana",
+          "claim": "http 注册80；https 注册443。"
+        }
+      ],
+      "detail": "core"
+    },
+    {
+      "id": "development",
+      "title": "开发服务",
+      "goal": "区分示例与注册服务",
+      "objects": [
+        "dev",
+        "alternate"
+      ],
+      "inputs": [
+        "服务类型"
+      ],
+      "outputs": [
+        "常见端口及其含义"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "scenario",
+          "claim": "3000 是本片配置示例。"
+        },
+        {
+          "sourceId": "iana",
+          "claim": "http-alt 注册为 8080。"
+        }
+      ],
+      "detail": "core"
+    },
+    {
+      "id": "data",
+      "title": "数据服务",
+      "goal": "常见产品的默认端口",
+      "objects": [
+        "mysql",
+        "postgres",
+        "redis",
+        "mongo"
+      ],
+      "inputs": [
+        "服务类型"
+      ],
+      "outputs": [
+        "常见端口及其含义"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "mysql-doc",
+          "claim": "MySQL TCP 默认端口为3306。"
+        },
+        {
+          "sourceId": "postgres-doc",
+          "claim": "PostgreSQL 默认监听端口5432。"
+        },
+        {
+          "sourceId": "redis-doc",
+          "claim": "Redis 文档用6379说明服务监听。"
+        },
+        {
+          "sourceId": "mongo-doc",
+          "claim": "mongod 和 mongos 默认端口27017。"
+        }
+      ],
+      "detail": "core"
+    }
+  ],
+  "relations": [],
+  "workflow": {
+    "host": "Codex",
+    "mode": "sequential",
+    "reason": "为验收主动选择不使用委派工具的顺序路径；主 Agent 按相同知识整理职责处理已有模拟材料或官方端口资料，审查后继续分镜与渲染。未声称宿主不支持委派，也未调用本案例的知识整理子 Agent。"
+  }
+}

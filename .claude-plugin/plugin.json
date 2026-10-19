@@ -1,7 +1,7 @@
 {
   "name": "knowledge-motion",
-  "version": "1.0.0",
-  "description": "Create dark knowledge motion infographics and silent MP4 videos with editable Remotion and SVG source.",
+  "version": "2.0.0",
+  "description": "Research and organize knowledge, then explain mechanisms with multi-scene dark infographics, silent MP4 and editable Remotion/SVG source.",
   "author": {
     "name": "resin",
     "url": "https://github.com/resinya"

@@ -1,0 +1,385 @@
+{
+  "schemaVersion": 2,
+  "title": "钱去了哪里？看懂家庭收支",
+  "subtitle": "模拟账本 · 同一账户保留前一笔结果",
+  "canvas": {
+    "orientation": "portrait"
+  },
+  "initialState": {
+    "balance": 3000,
+    "income": 0,
+    "expense": 0
+  },
+  "chapters": [
+    {
+      "id": "cashflow",
+      "title": "家庭收支",
+      "knowledgeNodeId": "cashflow"
+    }
+  ],
+  "scenes": [
+    {
+      "id": "opening",
+      "type": "overview",
+      "title": "先认识本片要回答的问题",
+      "knowledgeNodeIds": [
+        "cashflow"
+      ],
+      "explanation": "先认清关键对象，再进入每个模块",
+      "result": "下面展开内部过程",
+      "timing": {
+        "read": 1,
+        "act": 0.5,
+        "hold": 1
+      },
+      "overview": "all"
+    },
+    {
+      "id": "salary",
+      "type": "state",
+      "chapterId": "cashflow",
+      "title": "工资到账：+8000 元",
+      "knowledgeNodeIds": [
+        "cashflow"
+      ],
+      "explanation": "收入进入账户，同时累计本期收入",
+      "result": "余额 11000 元 · 收入 8000 · 支出 0",
+      "timing": {
+        "read": 1.5,
+        "act": 2.5,
+        "hold": 1
+      },
+      "metrics": [
+        {
+          "key": "balance",
+          "label": "可用余额",
+          "prefix": "¥",
+          "color": "cyan"
+        },
+        {
+          "key": "income",
+          "label": "本期收入",
+          "prefix": "¥",
+          "color": "green"
+        },
+        {
+          "key": "expense",
+          "label": "本期支出",
+          "prefix": "¥",
+          "color": "orange"
+        }
+      ],
+      "actions": [
+        {
+          "id": "update",
+          "kind": "count",
+          "at": 0,
+          "duration": 2.5,
+          "label": "工资到账 +8000 元",
+          "expect": {
+            "balance": 3000,
+            "income": 0,
+            "expense": 0
+          },
+          "set": {
+            "balance": 11000,
+            "income": 8000,
+            "expense": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "rent",
+      "type": "state",
+      "chapterId": "cashflow",
+      "title": "支付房租：−2800 元",
+      "knowledgeNodeIds": [
+        "cashflow"
+      ],
+      "explanation": "从同一账户支出，同时累计本期支出",
+      "result": "余额 8200 元 · 收入 8000 · 支出 2800",
+      "timing": {
+        "read": 1.5,
+        "act": 2.5,
+        "hold": 1
+      },
+      "metrics": [
+        {
+          "key": "balance",
+          "label": "可用余额",
+          "prefix": "¥",
+          "color": "cyan"
+        },
+        {
+          "key": "income",
+          "label": "本期收入",
+          "prefix": "¥",
+          "color": "green"
+        },
+        {
+          "key": "expense",
+          "label": "本期支出",
+          "prefix": "¥",
+          "color": "orange"
+        }
+      ],
+      "actions": [
+        {
+          "id": "update",
+          "kind": "count",
+          "at": 0,
+          "duration": 2.5,
+          "label": "支付房租 −2800 元",
+          "expect": {
+            "balance": 11000,
+            "income": 8000,
+            "expense": 0
+          },
+          "set": {
+            "balance": 8200,
+            "income": 8000,
+            "expense": 2800
+          }
+        }
+      ]
+    },
+    {
+      "id": "food",
+      "type": "state",
+      "chapterId": "cashflow",
+      "title": "日常采购：−1200 元",
+      "knowledgeNodeIds": [
+        "cashflow"
+      ],
+      "explanation": "从同一账户支出，同时累计本期支出",
+      "result": "余额 7000 元 · 收入 8000 · 支出 4000",
+      "timing": {
+        "read": 1.5,
+        "act": 2.5,
+        "hold": 1
+      },
+      "metrics": [
+        {
+          "key": "balance",
+          "label": "可用余额",
+          "prefix": "¥",
+          "color": "cyan"
+        },
+        {
+          "key": "income",
+          "label": "本期收入",
+          "prefix": "¥",
+          "color": "green"
+        },
+        {
+          "key": "expense",
+          "label": "本期支出",
+          "prefix": "¥",
+          "color": "orange"
+        }
+      ],
+      "actions": [
+        {
+          "id": "update",
+          "kind": "count",
+          "at": 0,
+          "duration": 2.5,
+          "label": "日常采购 −1200 元",
+          "expect": {
+            "balance": 8200,
+            "income": 8000,
+            "expense": 2800
+          },
+          "set": {
+            "balance": 7000,
+            "income": 8000,
+            "expense": 4000
+          }
+        }
+      ]
+    },
+    {
+      "id": "travel",
+      "type": "state",
+      "chapterId": "cashflow",
+      "title": "交通支出：−400 元",
+      "knowledgeNodeIds": [
+        "cashflow"
+      ],
+      "explanation": "从同一账户支出，同时累计本期支出",
+      "result": "余额 6600 元 · 收入 8000 · 支出 4400",
+      "timing": {
+        "read": 1.5,
+        "act": 2.5,
+        "hold": 1
+      },
+      "metrics": [
+        {
+          "key": "balance",
+          "label": "可用余额",
+          "prefix": "¥",
+          "color": "cyan"
+        },
+        {
+          "key": "income",
+          "label": "本期收入",
+          "prefix": "¥",
+          "color": "green"
+        },
+        {
+          "key": "expense",
+          "label": "本期支出",
+          "prefix": "¥",
+          "color": "orange"
+        }
+      ],
+      "actions": [
+        {
+          "id": "update",
+          "kind": "count",
+          "at": 0,
+          "duration": 2.5,
+          "label": "交通支出 −400 元",
+          "expect": {
+            "balance": 7000,
+            "income": 8000,
+            "expense": 4000
+          },
+          "set": {
+            "balance": 6600,
+            "income": 8000,
+            "expense": 4400
+          }
+        }
+      ]
+    },
+    {
+      "id": "extra",
+      "type": "state",
+      "chapterId": "cashflow",
+      "title": "额外收入：+600 元",
+      "knowledgeNodeIds": [
+        "cashflow"
+      ],
+      "explanation": "收入进入账户，同时累计本期收入",
+      "result": "余额 7200 元 · 收入 8600 · 支出 4400",
+      "timing": {
+        "read": 1.5,
+        "act": 2.5,
+        "hold": 1
+      },
+      "metrics": [
+        {
+          "key": "balance",
+          "label": "可用余额",
+          "prefix": "¥",
+          "color": "cyan"
+        },
+        {
+          "key": "income",
+          "label": "本期收入",
+          "prefix": "¥",
+          "color": "green"
+        },
+        {
+          "key": "expense",
+          "label": "本期支出",
+          "prefix": "¥",
+          "color": "orange"
+        }
+      ],
+      "actions": [
+        {
+          "id": "update",
+          "kind": "count",
+          "at": 0,
+          "duration": 2.5,
+          "label": "额外收入 +600 元",
+          "expect": {
+            "balance": 6600,
+            "income": 8000,
+            "expense": 4400
+          },
+          "set": {
+            "balance": 7200,
+            "income": 8600,
+            "expense": 4400
+          }
+        }
+      ]
+    },
+    {
+      "id": "bill",
+      "type": "state",
+      "chapterId": "cashflow",
+      "title": "支付账单：−300 元",
+      "knowledgeNodeIds": [
+        "cashflow"
+      ],
+      "explanation": "从同一账户支出，同时累计本期支出",
+      "result": "余额 6900 元 · 收入 8600 · 支出 4700",
+      "timing": {
+        "read": 1.5,
+        "act": 2.5,
+        "hold": 1
+      },
+      "metrics": [
+        {
+          "key": "balance",
+          "label": "可用余额",
+          "prefix": "¥",
+          "color": "cyan"
+        },
+        {
+          "key": "income",
+          "label": "本期收入",
+          "prefix": "¥",
+          "color": "green"
+        },
+        {
+          "key": "expense",
+          "label": "本期支出",
+          "prefix": "¥",
+          "color": "orange"
+        }
+      ],
+      "actions": [
+        {
+          "id": "update",
+          "kind": "count",
+          "at": 0,
+          "duration": 2.5,
+          "label": "支付账单 −300 元",
+          "expect": {
+            "balance": 7200,
+            "income": 8600,
+            "expense": 4400
+          },
+          "set": {
+            "balance": 6900,
+            "income": 8600,
+            "expense": 4700
+          }
+        }
+      ]
+    },
+    {
+      "id": "final",
+      "type": "overview",
+      "chapterId": "cashflow",
+      "title": "回到全貌，串起原因与结果",
+      "knowledgeNodeIds": [
+        "cashflow"
+      ],
+      "explanation": "完成的结果保留在全貌中",
+      "result": "把每个模块的输出交给下一步",
+      "timing": {
+        "read": 1,
+        "act": 0.5,
+        "hold": 1
+      },
+      "overview": "return"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "name": "knowledge-motion",
-  "description": "Knowledge Motion: dark infographics and silent knowledge videos",
+  "description": "Knowledge Motion: research, knowledge structures and silent mechanism videos",
   "owner": {
     "name": "resin",
     "url": "https://github.com/resinya"
@@ -9,8 +9,8 @@
     {
       "name": "knowledge-motion",
       "source": ".",
-      "description": "Knowledge, process and state-change animations exported as silent MP4 videos",
-      "version": "1.0.0"
+      "description": "Research and organize knowledge, then animate mechanisms as silent MP4 videos with editable source",
+      "version": "2.0.0"
     }
   ]
 }

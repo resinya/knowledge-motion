@@ -1,7 +1,7 @@
 {
   "name": "knowledge-motion",
-  "version": "1.0.0",
-  "description": "Turn knowledge, processes and state changes into dark motion infographics and silent MP4 videos with editable Remotion and SVG source.",
+  "version": "2.0.0",
+  "description": "Research and organize knowledge, then explain mechanisms with multi-scene dark infographics, silent MP4 and editable Remotion/SVG source.",
   "author": {
     "name": "resin",
     "url": "https://github.com/resinya"
@@ -18,20 +18,20 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Knowledge Motion",
-    "shortDescription": "Knowledge motion infographics and silent videos",
-    "longDescription": "Create dark infographics with fixed sections, step-by-step focus, object transfers and persistent results. Export silent MP4 videos, editable source projects and storyboards.",
+    "shortDescription": "Research knowledge and animate its mechanisms",
+    "longDescription": "Organize sourced modules and necessary sub-processes before creating chaptered, multi-scene mechanism videos. Choose a readable canvas and content-driven duration; export silent MP4, knowledge structures, editable source and storyboards.",
     "developerName": "resin",
     "category": "Development",
     "capabilities": [
-      "Knowledge infographics",
-      "Process animation",
+      "Sourced knowledge structures",
+      "Multi-scene mechanism animation",
       "Silent MP4 rendering"
     ],
     "websiteURL": "https://resinya.github.io/knowledge-motion/",
     "defaultPrompt": [
-      "Make a 20-second silent infographic about how an online order reaches the buyer.",
-      "Animate this classification as a dark infographic.",
-      "Show how these operations change the system state."
+      "Research and explain what happens after entering a URL, including necessary internal mechanisms.",
+      "Turn this material into a sourced knowledge structure and a silent video.",
+      "Show how this simulated business process works, including its essential sub-processes."
     ]
   }
 }

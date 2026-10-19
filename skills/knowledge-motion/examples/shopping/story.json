@@ -1,0 +1,600 @@
+{
+  "schemaVersion": 2,
+  "title": "网购订单从付款到签收",
+  "subtitle": "模拟履约 · 展开仓库内部的关键过程",
+  "canvas": {
+    "orientation": "portrait"
+  },
+  "initialState": {
+    "order-state": "待付款"
+  },
+  "chapters": [
+    {
+      "id": "payment",
+      "title": "支付成功",
+      "knowledgeNodeId": "payment"
+    },
+    {
+      "id": "fulfillment",
+      "title": "仓库履约",
+      "knowledgeNodeId": "fulfillment"
+    },
+    {
+      "id": "delivery",
+      "title": "运输派送",
+      "knowledgeNodeId": "delivery"
+    },
+    {
+      "id": "receipt",
+      "title": "签收确认",
+      "knowledgeNodeId": "receipt"
+    }
+  ],
+  "scenes": [
+    {
+      "id": "opening",
+      "type": "overview",
+      "title": "先认识本片要回答的问题",
+      "knowledgeNodeIds": [
+        "payment",
+        "fulfillment",
+        "delivery",
+        "receipt"
+      ],
+      "explanation": "先认清关键对象，再进入每个模块",
+      "result": "下面展开内部过程",
+      "timing": {
+        "read": 1,
+        "act": 0.5,
+        "hold": 1
+      },
+      "overview": "all"
+    },
+    {
+      "id": "payment-success",
+      "type": "parallel",
+      "chapterId": "payment",
+      "title": "付款成功后，生成待履约订单",
+      "knowledgeNodeIds": [
+        "payment"
+      ],
+      "explanation": "支付确认后，仓库才有明确的履约任务",
+      "result": "支付成功，订单进入待履约",
+      "timing": {
+        "read": 1.5,
+        "act": 3,
+        "hold": 1.5
+      },
+      "items": [
+        {
+          "id": "pay",
+          "label": "买家付款",
+          "objectId": "buyer"
+        },
+        {
+          "id": "confirm",
+          "label": "支付确认",
+          "objectId": "order"
+        },
+        {
+          "id": "pending",
+          "label": "待履约订单",
+          "objectId": "order"
+        }
+      ],
+      "links": [
+        {
+          "from": "pay",
+          "to": "confirm",
+          "label": "128 元示例"
+        },
+        {
+          "from": "confirm",
+          "to": "pending",
+          "label": "确认成功"
+        }
+      ],
+      "actions": [
+        {
+          "id": "confirm",
+          "kind": "transfer",
+          "from": "pay",
+          "to": "confirm",
+          "at": 0,
+          "duration": 1.5,
+          "label": "支付结果"
+        },
+        {
+          "id": "pending",
+          "kind": "transfer",
+          "from": "confirm",
+          "to": "pending",
+          "at": 1.5,
+          "duration": 1.5,
+          "set": {
+            "order-state": "待履约"
+          },
+          "expect": {
+            "order-state": "待付款"
+          }
+        }
+      ]
+    },
+    {
+      "id": "return-payment",
+      "type": "overview",
+      "chapterId": "payment",
+      "title": "先认识本片要回答的问题",
+      "knowledgeNodeIds": [
+        "payment",
+        "fulfillment",
+        "delivery",
+        "receipt"
+      ],
+      "explanation": "先认清关键对象，再进入每个模块",
+      "result": "下面展开内部过程",
+      "timing": {
+        "read": 1,
+        "act": 0.5,
+        "hold": 1
+      },
+      "overview": "return"
+    },
+    {
+      "id": "pick-order",
+      "type": "linked",
+      "chapterId": "fulfillment",
+      "title": "拣货：按订单定位商品",
+      "knowledgeNodeIds": [
+        "fulfillment",
+        "pick"
+      ],
+      "explanation": "先读商品编码与数量，再按库位取出商品",
+      "result": "商品 A × 1 进入核对区",
+      "timing": {
+        "read": 2,
+        "act": 3,
+        "hold": 1.5
+      },
+      "data": {
+        "headings": [
+          "订单",
+          "仓库动作",
+          "结果"
+        ]
+      },
+      "items": [
+        {
+          "id": "order-item",
+          "label": "商品 A × 1",
+          "column": 0,
+          "objectId": "order"
+        },
+        {
+          "id": "shelf",
+          "label": "库位 B-02",
+          "column": 1,
+          "objectId": "warehouse"
+        },
+        {
+          "id": "picked",
+          "label": "待核对商品",
+          "column": 2,
+          "objectId": "goods"
+        }
+      ],
+      "links": [
+        {
+          "from": "order-item",
+          "to": "shelf",
+          "label": "按单定位"
+        },
+        {
+          "from": "shelf",
+          "to": "picked",
+          "label": "取出一件"
+        }
+      ],
+      "actions": [
+        {
+          "id": "locate",
+          "kind": "transfer",
+          "from": "order-item",
+          "to": "shelf",
+          "at": 0,
+          "duration": 1.7
+        },
+        {
+          "id": "take",
+          "kind": "reveal",
+          "target": "picked",
+          "at": 1.7,
+          "duration": 1.3
+        }
+      ]
+    },
+    {
+      "id": "verify-goods",
+      "type": "branch",
+      "chapterId": "fulfillment",
+      "title": "核对：编码和数量都要匹配",
+      "knowledgeNodeIds": [
+        "verify"
+      ],
+      "explanation": "通过才去包装；不匹配则回到复核",
+      "result": "本例匹配通过，进入包装",
+      "timing": {
+        "read": 1.5,
+        "act": 3,
+        "hold": 1.5
+      },
+      "items": [
+        {
+          "id": "goods-ready",
+          "label": "待核对商品",
+          "objectId": "goods",
+          "x": 0.5,
+          "y": 0.12
+        },
+        {
+          "id": "match",
+          "label": "编码与数量匹配？",
+          "x": 0.5,
+          "y": 0.4
+        },
+        {
+          "id": "pass",
+          "label": "通过：去包装",
+          "color": "green",
+          "x": 0.24,
+          "y": 0.8
+        },
+        {
+          "id": "review",
+          "label": "不符：重新复核",
+          "color": "orange",
+          "x": 0.76,
+          "y": 0.8
+        }
+      ],
+      "links": [
+        {
+          "from": "goods-ready",
+          "to": "match"
+        },
+        {
+          "from": "match",
+          "to": "pass",
+          "label": "本例：是"
+        },
+        {
+          "from": "match",
+          "to": "review",
+          "label": "否"
+        }
+      ],
+      "actions": [
+        {
+          "id": "check",
+          "kind": "transfer",
+          "from": "goods-ready",
+          "to": "match",
+          "at": 0,
+          "duration": 1.5
+        },
+        {
+          "id": "pass",
+          "kind": "transfer",
+          "from": "match",
+          "to": "pass",
+          "at": 1.5,
+          "duration": 1.5
+        }
+      ]
+    },
+    {
+      "id": "pack-and-label",
+      "type": "parallel",
+      "chapterId": "fulfillment",
+      "title": "包装与面单，共同完成交接条件",
+      "knowledgeNodeIds": [
+        "pack"
+      ],
+      "explanation": "包装保护商品，面单把包裹关联回订单",
+      "result": "包裹与面单齐备，交给快递",
+      "timing": {
+        "read": 1.5,
+        "act": 3,
+        "hold": 1.5
+      },
+      "items": [
+        {
+          "id": "verified",
+          "label": "核对通过",
+          "objectId": "goods",
+          "x": 0.5,
+          "y": 0.1
+        },
+        {
+          "id": "protect",
+          "label": "包装保护",
+          "objectId": "parcel",
+          "x": 0.23,
+          "y": 0.43
+        },
+        {
+          "id": "label",
+          "label": "关联订单面单",
+          "objectId": "order",
+          "x": 0.77,
+          "y": 0.43
+        },
+        {
+          "id": "handover",
+          "label": "包裹交接快递",
+          "objectId": "courier",
+          "x": 0.5,
+          "y": 0.86
+        }
+      ],
+      "links": [
+        {
+          "from": "verified",
+          "to": "protect"
+        },
+        {
+          "from": "verified",
+          "to": "label"
+        },
+        {
+          "from": "protect",
+          "to": "handover",
+          "label": "包装完成"
+        },
+        {
+          "from": "label",
+          "to": "handover",
+          "label": "面单齐备"
+        }
+      ],
+      "actions": [
+        {
+          "id": "wrap",
+          "kind": "transfer",
+          "from": "verified",
+          "to": "protect",
+          "at": 0,
+          "duration": 1.5
+        },
+        {
+          "id": "label",
+          "kind": "transfer",
+          "from": "verified",
+          "to": "label",
+          "at": 0,
+          "duration": 1.5
+        },
+        {
+          "id": "hand",
+          "kind": "transfer",
+          "from": "protect",
+          "to": "handover",
+          "at": 1.5,
+          "duration": 1.5
+        },
+        {
+          "id": "attach",
+          "kind": "transfer",
+          "from": "label",
+          "to": "handover",
+          "at": 1.5,
+          "duration": 1.5,
+          "set": {
+            "order-state": "已发货"
+          },
+          "expect": {
+            "order-state": "待履约"
+          }
+        }
+      ]
+    },
+    {
+      "id": "return-fulfillment",
+      "type": "overview",
+      "chapterId": "fulfillment",
+      "title": "先认识本片要回答的问题",
+      "knowledgeNodeIds": [
+        "payment",
+        "fulfillment",
+        "delivery",
+        "receipt"
+      ],
+      "explanation": "先认清关键对象，再进入每个模块",
+      "result": "下面展开内部过程",
+      "timing": {
+        "read": 1,
+        "act": 0.5,
+        "hold": 1
+      },
+      "overview": "return"
+    },
+    {
+      "id": "transport",
+      "type": "parallel",
+      "chapterId": "delivery",
+      "title": "运输到站，再完成最后一段派送",
+      "knowledgeNodeIds": [
+        "delivery"
+      ],
+      "explanation": "转运带到目的城市，派送带到收货地址",
+      "result": "包裹已到收货地，等待签收",
+      "timing": {
+        "read": 1.5,
+        "act": 3,
+        "hold": 1.5
+      },
+      "items": [
+        {
+          "id": "hub",
+          "label": "转运到目的城市",
+          "objectId": "parcel"
+        },
+        {
+          "id": "last-mile",
+          "label": "配送员接件",
+          "objectId": "courier"
+        },
+        {
+          "id": "door",
+          "label": "送到收货地",
+          "objectId": "address"
+        }
+      ],
+      "links": [
+        {
+          "from": "hub",
+          "to": "last-mile",
+          "label": "交接"
+        },
+        {
+          "from": "last-mile",
+          "to": "door",
+          "label": "派送"
+        }
+      ],
+      "actions": [
+        {
+          "id": "handover",
+          "kind": "transfer",
+          "from": "hub",
+          "to": "last-mile",
+          "at": 0,
+          "duration": 1.5
+        },
+        {
+          "id": "deliver",
+          "kind": "transfer",
+          "from": "last-mile",
+          "to": "door",
+          "at": 1.5,
+          "duration": 1.5,
+          "set": {
+            "order-state": "待签收"
+          },
+          "expect": {
+            "order-state": "已发货"
+          }
+        }
+      ]
+    },
+    {
+      "id": "return-delivery",
+      "type": "overview",
+      "chapterId": "delivery",
+      "title": "先认识本片要回答的问题",
+      "knowledgeNodeIds": [
+        "payment",
+        "fulfillment",
+        "delivery",
+        "receipt"
+      ],
+      "explanation": "先认清关键对象，再进入每个模块",
+      "result": "下面展开内部过程",
+      "timing": {
+        "read": 1,
+        "act": 0.5,
+        "hold": 1
+      },
+      "overview": "return"
+    },
+    {
+      "id": "receive",
+      "type": "parallel",
+      "chapterId": "receipt",
+      "title": "签收事件，回写订单记录",
+      "knowledgeNodeIds": [
+        "receipt"
+      ],
+      "explanation": "收到包裹后，签收结果与同一笔订单关联",
+      "result": "订单留下已签收记录",
+      "timing": {
+        "read": 1.5,
+        "act": 3,
+        "hold": 1.5
+      },
+      "items": [
+        {
+          "id": "parcel-in",
+          "label": "包裹送达",
+          "objectId": "parcel"
+        },
+        {
+          "id": "buyer-check",
+          "label": "买家签收",
+          "objectId": "buyer"
+        },
+        {
+          "id": "record",
+          "label": "订单：已签收",
+          "objectId": "order"
+        }
+      ],
+      "links": [
+        {
+          "from": "parcel-in",
+          "to": "buyer-check",
+          "label": "交付"
+        },
+        {
+          "from": "buyer-check",
+          "to": "record",
+          "label": "回写记录"
+        }
+      ],
+      "actions": [
+        {
+          "id": "get",
+          "kind": "transfer",
+          "from": "parcel-in",
+          "to": "buyer-check",
+          "at": 0,
+          "duration": 1.5
+        },
+        {
+          "id": "write",
+          "kind": "transfer",
+          "from": "buyer-check",
+          "to": "record",
+          "at": 1.5,
+          "duration": 1.5,
+          "set": {
+            "order-state": "已签收"
+          },
+          "expect": {
+            "order-state": "待签收"
+          }
+        }
+      ]
+    },
+    {
+      "id": "final",
+      "type": "overview",
+      "chapterId": "receipt",
+      "title": "回到全貌，串起原因与结果",
+      "knowledgeNodeIds": [
+        "payment",
+        "fulfillment",
+        "delivery",
+        "receipt"
+      ],
+      "explanation": "完成的结果保留在全貌中",
+      "result": "把每个模块的输出交给下一步",
+      "timing": {
+        "read": 1,
+        "act": 0.5,
+        "hold": 1
+      },
+      "overview": "return"
+    }
+  ]
+}

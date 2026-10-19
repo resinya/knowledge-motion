@@ -13,7 +13,7 @@ export default function HomePage() {
       <header className="home-hero">
         <p className="eyebrow">知识动态信息图</p>
         <h1>让知识，<span>动起来。</span></h1>
-        <p className="hero-description">把分类、流程与变化，做成一眼看懂的动态过程。<br className="max-sm:hidden" />输入主题，获得静音视频、可编辑源文件与分镜。</p>
+        <p className="hero-description">先组织知识，再用动态过程讲清内部机制。<br className="max-sm:hidden" />输入主题，获得知识结构、静音视频、源码与分镜。</p>
         <div className="hero-actions">
           <Link href={`${docsRoute}/guide`} className="button-primary">开始制作 <ArrowRight size={16} aria-hidden="true" /></Link>
           <Link href={examplesRoute} className="button-secondary">查看效果案例</Link>
@@ -32,9 +32,9 @@ export default function HomePage() {
       <section className="home-principles" aria-labelledby="principles-title">
         <h2 id="principles-title" className="section-title">全貌始终可见，变化一步看懂。</h2>
         <div className="principles-grid">
-          <div><h3>保留全貌</h3><p>固定分区承载知识结构，随时知道当前步骤在哪里。</p></div>
-          <div><h3>逐步聚焦</h3><p>用高亮、路径和对象移动，清楚说明每一步如何发生。</p></div>
-          <div><h3>交付完整</h3><p>静音成片、分镜与动画源文件一起保留，方便继续修改。</p></div>
+          <div><h3>保留全貌</h3><p>总览导航保留知识结构，随时知道当前讲到哪里。</p></div>
+          <div><h3>逐步聚焦</h3><p>展开必要内部过程，用合适场景说明动作、原因和结果。</p></div>
+          <div><h3>交付完整</h3><p>知识结构、静音成片、分镜与源码一起保留，方便继续修改。</p></div>
         </div>
       </section>
 

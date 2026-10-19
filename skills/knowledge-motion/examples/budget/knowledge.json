@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "title": "钱去了哪里？看懂家庭收支",
+  "audience": "初学者",
+  "questions": [
+    "每笔收入和支出怎样改变余额？"
+  ],
+  "conditions": [
+    "模拟账本，金额只用于说明计算。",
+    "期初余额3000元，不涉及投资或税费。"
+  ],
+  "sources": [
+    {
+      "id": "ledger",
+      "title": "模拟家庭账本",
+      "kind": "simulation",
+      "summary": "期初3000，收入8000和600，支出2800、1200、400和300。"
+    }
+  ],
+  "objects": [
+    {
+      "id": "wallet",
+      "label": "家庭账户",
+      "color": "cyan"
+    },
+    {
+      "id": "income-object",
+      "label": "收入",
+      "color": "green"
+    },
+    {
+      "id": "expense-object",
+      "label": "支出",
+      "color": "orange"
+    }
+  ],
+  "modules": [
+    "cashflow"
+  ],
+  "nodes": [
+    {
+      "id": "cashflow",
+      "title": "收支与余额",
+      "goal": "期初余额加收入减支出",
+      "objects": [
+        "wallet",
+        "income-object",
+        "expense-object"
+      ],
+      "inputs": [
+        "期初余额与账目"
+      ],
+      "outputs": [
+        "收入8600，支出4700，余额6900"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "ledger",
+          "claim": "3000 + 8600 - 4700 = 6900；按账目先后更新。"
+        }
+      ],
+      "detail": "core"
+    }
+  ],
+  "relations": [],
+  "workflow": {
+    "host": "Codex",
+    "mode": "sequential",
+    "reason": "为验收主动选择不使用委派工具的顺序路径；主 Agent 按相同知识整理职责处理已有模拟材料或官方端口资料，审查后继续分镜与渲染。未声称宿主不支持委派，也未调用本案例的知识整理子 Agent。"
+  }
+}

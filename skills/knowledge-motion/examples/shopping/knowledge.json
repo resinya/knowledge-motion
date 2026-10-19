@@ -1,0 +1,262 @@
+{
+  "schemaVersion": 2,
+  "title": "网购订单从付款到签收",
+  "audience": "初学者",
+  "questions": [
+    "付款后订单怎样变成送到手中的包裹？",
+    "拣货、核对、包装为什么需要分开？"
+  ],
+  "conditions": [
+    "模拟有库存的实物商品，订单128元。",
+    "假设支付成功、核对通过、配送顺利。",
+    "本片是一种模拟履约安排，不代表全部平台规则；异常分支为扩展。"
+  ],
+  "sources": [
+    {
+      "id": "scenario",
+      "title": "本片模拟订单与履约安排",
+      "kind": "simulation",
+      "summary": "用于解释对象与状态变化，不作为平台业务规则。"
+    }
+  ],
+  "objects": [
+    {
+      "id": "buyer",
+      "label": "买家",
+      "color": "purple"
+    },
+    {
+      "id": "order",
+      "label": "订单",
+      "color": "cyan"
+    },
+    {
+      "id": "warehouse",
+      "label": "仓库",
+      "color": "cyan"
+    },
+    {
+      "id": "goods",
+      "label": "商品",
+      "color": "orange"
+    },
+    {
+      "id": "parcel",
+      "label": "包裹",
+      "color": "green"
+    },
+    {
+      "id": "courier",
+      "label": "快递",
+      "color": "cyan"
+    },
+    {
+      "id": "address",
+      "label": "收货地",
+      "color": "green"
+    }
+  ],
+  "modules": [
+    "payment",
+    "fulfillment",
+    "delivery",
+    "receipt"
+  ],
+  "nodes": [
+    {
+      "id": "payment",
+      "title": "支付成功",
+      "goal": "支付记录产生待履约订单",
+      "objects": [
+        "buyer",
+        "order"
+      ],
+      "inputs": [
+        "确认购买商品"
+      ],
+      "outputs": [
+        "待履约订单"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "scenario",
+          "claim": "本片模拟业务安排，不表示统一平台规则。"
+        }
+      ],
+      "detail": "core"
+    },
+    {
+      "id": "fulfillment",
+      "title": "仓库履约",
+      "goal": "把订单变成可交接的包裹",
+      "objects": [
+        "order",
+        "warehouse",
+        "goods",
+        "parcel"
+      ],
+      "inputs": [
+        "待履约订单"
+      ],
+      "outputs": [
+        "可交接包裹"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "scenario",
+          "claim": "本片模拟业务安排，不表示统一平台规则。"
+        }
+      ],
+      "detail": "core"
+    },
+    {
+      "id": "pick",
+      "title": "按单拣货",
+      "goal": "商品编码和数量确定取货任务",
+      "objects": [
+        "order",
+        "warehouse",
+        "goods"
+      ],
+      "inputs": [
+        "订单商品与数量"
+      ],
+      "outputs": [
+        "待核对商品"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "scenario",
+          "claim": "本片模拟业务安排，不表示统一平台规则。"
+        }
+      ],
+      "parentId": "fulfillment",
+      "detail": "core"
+    },
+    {
+      "id": "verify",
+      "title": "核对商品",
+      "goal": "编码和数量匹配才进入包装",
+      "objects": [
+        "order",
+        "goods"
+      ],
+      "inputs": [
+        "待核对商品"
+      ],
+      "outputs": [
+        "通过核对的商品"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "scenario",
+          "claim": "本片模拟业务安排，不表示统一平台规则。"
+        }
+      ],
+      "parentId": "fulfillment",
+      "detail": "core"
+    },
+    {
+      "id": "pack",
+      "title": "包装交接",
+      "goal": "保护商品并关联面单与订单",
+      "objects": [
+        "goods",
+        "parcel",
+        "courier"
+      ],
+      "inputs": [
+        "通过核对的商品"
+      ],
+      "outputs": [
+        "关联面单的包裹"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "scenario",
+          "claim": "本片模拟业务安排，不表示统一平台规则。"
+        }
+      ],
+      "parentId": "fulfillment",
+      "detail": "core"
+    },
+    {
+      "id": "delivery",
+      "title": "运输派送",
+      "goal": "包裹从揽收到送达收货地",
+      "objects": [
+        "parcel",
+        "courier",
+        "address"
+      ],
+      "inputs": [
+        "关联面单的包裹"
+      ],
+      "outputs": [
+        "待签收包裹"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "scenario",
+          "claim": "本片模拟业务安排，不表示统一平台规则。"
+        }
+      ],
+      "detail": "core"
+    },
+    {
+      "id": "receipt",
+      "title": "签收确认",
+      "goal": "签收事件更新订单记录",
+      "objects": [
+        "buyer",
+        "parcel",
+        "order"
+      ],
+      "inputs": [
+        "待签收包裹"
+      ],
+      "outputs": [
+        "签收记录"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "scenario",
+          "claim": "本片模拟业务安排，不表示统一平台规则。"
+        }
+      ],
+      "detail": "core"
+    }
+  ],
+  "relations": [
+    {
+      "type": "precedes",
+      "from": "payment",
+      "to": "fulfillment"
+    },
+    {
+      "type": "precedes",
+      "from": "pick",
+      "to": "verify"
+    },
+    {
+      "type": "precedes",
+      "from": "verify",
+      "to": "pack"
+    },
+    {
+      "type": "precedes",
+      "from": "fulfillment",
+      "to": "delivery"
+    },
+    {
+      "type": "precedes",
+      "from": "delivery",
+      "to": "receipt"
+    }
+  ],
+  "workflow": {
+    "host": "Codex",
+    "mode": "sequential",
+    "reason": "为验收主动选择不使用委派工具的顺序路径；主 Agent 按相同知识整理职责处理已有模拟材料或官方端口资料，审查后继续分镜与渲染。未声称宿主不支持委派，也未调用本案例的知识整理子 Agent。"
+  }
+}

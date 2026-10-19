@@ -1,187 +1,352 @@
 import React from 'react';
 import {useCurrentFrame} from 'remotion';
-import {Glyph} from './Glyph.jsx';
-import {clamp, mix, ease, tone, timelineAt, stepProgress, metricValue, wrapText, glyphWidth, diagramGeometry} from './story.mjs';
+import {timelineAt,stateAt,actionProgress,clamp,mix,ease,glyphWidth} from './story.mjs';
+import {C,FONT,ink,Text,Panel,Pill,Arrow,textLines,labelHeight} from './visual.jsx';
+import {customScenes} from './custom-scenes.jsx';
 
-const C = {bg: '#040914', card: '#0b1625', line: '#20354b', text: '#edf5ff', muted: '#8ca1b8', cyan: '#32c5ff', green: '#31dbaf'};
-const FONT = '"Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", "Noto Sans SC", sans-serif';
+const objectFor=(knowledge,id)=>knowledge.objects.find(object=>object.id===id);
+const nodeFor=(knowledge,id)=>knowledge.nodes.find(node=>node.id===id);
+const itemObject=(knowledge,item)=>objectFor(knowledge,item.objectId??item.id);
+const actionTarget=(action,id)=>action.target===id||action.from===id||action.to===id;
+const currentAction=(scene,localFrame,fps)=>scene.actions.find(action=>{
+  const p=actionProgress(scene,action,localFrame,fps);
+  return p>0&&p<1;
+});
+const actionActive=(scene,id,localFrame,fps)=>scene.actions.some(action=>actionTarget(action,id)&&actionProgress(scene,action,localFrame,fps)>0&&actionProgress(scene,action,localFrame,fps)<1);
 
-function Text({x, y, width, text, size = 28, color = C.text, weight = 500, anchor = 'start', lineHeight = 1.4, opacity = 1}) {
-  const lines = wrapText(text, width / size);
-  return <text x={x} y={y} fill={color} fontSize={size} fontWeight={weight} textAnchor={anchor} opacity={opacity}>
-    {lines.map((line, i) => <tspan key={i} x={x} dy={i === 0 ? 0 : size * lineHeight}>{line}</tspan>)}
-  </text>;
-}
-
-function Panel({x, y, width, height, color = C.line, active = false, children}) {
-  return <g transform={`translate(${x} ${y})`}>
-    {active && <rect x="-3" y="-3" width={width + 6} height={height + 6} rx="20" fill="none" stroke={color} strokeWidth="7" opacity="0.1"/>}
-    <rect width={width} height={height} rx="17" fill="url(#panel)" stroke={color} strokeWidth={active ? 2.8 : 1.5}/>
-    {children}
-  </g>;
-}
-
-function Diagram({diagram, width, height, progress, color, compact = false}) {
-  const small = compact || diagram.nodes.length === 4;
-  const {nodes, edges} = diagramGeometry(diagram, width, height, small);
-  const overall = clamp((progress - 0.14) / 0.62);
-  return <g>
-    {edges.map((edge, i) => {
-      const p = clamp(overall * edges.length - i);
-      const dx = edge.x2 - edge.x1, dy = edge.y2 - edge.y1;
-      const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-      const midpoint = {x: (edge.x1 + edge.x2) / 2, y: (edge.y1 + edge.y2) / 2};
-      const path = `M${edge.x1} ${edge.y1}L${edge.x2} ${edge.y2}`;
-      const t = ease(p);
-      return <g key={i}>
-        <path d={path} fill="none" stroke={C.line} strokeWidth="2" strokeDasharray="5 8"/>
-        <path d={path} fill="none" stroke={color} strokeWidth={compact ? 2 : 2.8} pathLength="1" strokeDasharray="1" strokeDashoffset={1 - p} opacity={0.35 + p * 0.65}/>
-        <path d="M-8-5L0 0L-8 5" transform={`translate(${edge.x2} ${edge.y2}) rotate(${angle})`} fill="none" stroke={p > 0.95 ? color : C.line} strokeWidth="2"/>
-        {edge.label && <g opacity={mix(0.22, 1, p)}>
-          <rect x={midpoint.x - glyphWidth(edge.label) * (compact ? 10 : 11) - 8} y={midpoint.y - (compact ? 27 : 33)} width={glyphWidth(edge.label) * (compact ? 20 : 22) + 16} height={compact ? 23 : 28} rx="7" fill={C.card}/>
-          <Text x={midpoint.x} y={midpoint.y - (compact ? 10 : 12)} width={200} text={edge.label} size={compact ? 20 : 22} anchor="middle" color={color}/>
-        </g>}
-        {p > 0 && p < 1 && <g>
-          <circle cx={mix(edge.x1, edge.x2, t)} cy={mix(edge.y1, edge.y2, t)} r="11" fill={color} opacity="0.15"/>
-          <circle cx={mix(edge.x1, edge.x2, t)} cy={mix(edge.y1, edge.y2, t)} r="4.5" fill="#ffffff"/>
-        </g>}
+function Navigation({story,knowledge,scene,frame,x,y,width,portrait}) {
+  const count=story.chapters.length,capacity=portrait?3:5,gap=10;
+  const selected=story.chapters.findIndex(chapter=>chapter.id===scene.chapterId);
+  const lastCompleted=[...story.chapters].reverse().find(chapter=>{const related=story.scenes.filter(s=>s.chapterId===chapter.id&&s.type!=='overview');return related.length&&related.every(s=>s.end<=frame);});
+  const current=Math.max(0,selected>=0?selected:story.chapters.indexOf(lastCompleted));
+  const first=Math.max(0,Math.min(count-capacity,current-Math.floor(capacity/2)));
+  const shown=story.chapters.slice(first,first+capacity);
+  const counterWidth=count>capacity?110:0;
+  const w=(width-counterWidth-gap*(shown.length-1))/Math.max(1,shown.length);
+  return <g transform={'translate('+x+' '+y+')'}>
+    {shown.map((chapter,i)=>{
+      const scenes=story.scenes.filter(s=>s.chapterId===chapter.id&&s.type!=='overview');
+      const done=scenes.length>0&&scenes.every(s=>s.end<=frame);
+      const active=chapter.id===scene.chapterId;
+      const color=active?C.cyan:done?C.green:C.muted;
+      return <g key={chapter.id}>
+        <rect x={i*(w+gap)} width={w} height={portrait?64:57} rx="12" fill={active?'#102a3b':C.card} stroke={active?C.cyan:C.line}/>
+        <circle cx={i*(w+gap)+23} cy={portrait?33:29} r="5" fill={color}/>
+        <Text x={i*(w+gap)+42} y={portrait?42:38} width={w-60} text={chapter.title} size={portrait?25:26} color={color} maxLines={1} overflow="ellipsis"/>
       </g>;
     })}
-    {nodes.map((node) => {
-      const incoming = edges.map((e, i) => e.to === node.id ? i : -1).filter((i) => i >= 0);
-      const reached = incoming.length ? incoming.some((i) => overall * edges.length - i >= 1) : progress > 0.12;
-      const c = reached ? tone(node.color ?? color) : C.muted;
-      const labelWidth = Math.min(small ? 209 : 230, width / (nodes.length === 4 ? 2 : nodes.length) - 12);
-      return <g key={node.id}>
-        <rect x={node.cx - (small ? 25 : 34)} y={node.cy - (small ? 25 : 34)} width={small ? 50 : 68} height={small ? 50 : 68} rx="12" fill={reached ? `${c}12` : '#0d1b2b'} stroke={reached ? c : C.line} opacity={reached ? 1 : 0.65}/>
-        <Glyph name={node.icon} x={node.cx} y={node.cy} size={small ? 32 : 43} color={c}/>
-        <Text x={node.cx} y={node.cy + (small ? 49 : 67)} width={labelWidth} text={node.label} size={small ? 20 : 25} color={c} anchor="middle"/>
+    {count>capacity&&<Text x={width-4} y={portrait?42:38} width={100} text={String(current+1)+' / '+count} size={25} color={C.muted} anchor="end"/>}
+  </g>;
+}
+
+function Overview({story,knowledge,scene,localFrame,width,height,frame}) {
+  const portrait=width<1200;
+  const modules=knowledge.modules.map(id=>nodeFor(knowledge,id)).filter(Boolean);
+  const cols=portrait?2:3,rows=portrait?4:2,capacity=cols*rows;
+  const pages=Math.max(1,Math.ceil(modules.length/capacity));
+  const page=scene.overview==='return'
+    ?Math.floor(Math.max(0,modules.findIndex(n=>n.id===story.chapters.find(c=>c.id===scene.chapterId)?.knowledgeNodeId))/capacity)
+    :Math.min(pages-1,Math.floor(clamp(localFrame/Math.max(1,scene.frames-1))*pages));
+  const visible=modules.slice(page*capacity,(page+1)*capacity);
+  const actualRows=Math.ceil(visible.length/cols),gap=portrait?24:26;
+  const cardW=(width-(cols-1)*gap)/cols;
+  const cardH=Math.min(portrait?270:270,(height-54-(actualRows-1)*gap)/Math.max(1,actualRows));
+  return <g>
+    <Text x={0} y={27} width={width-180} text={scene.overview==='return'?'回到全貌 · 保留已经完成的结果':'知识全貌 · 每个模块回答一个问题'} size={portrait?27:26} color={C.muted}/>
+    {pages>1&&<Text x={width} y={27} width={150} text={String(page+1)+' / '+pages} size={27} color={C.cyan} anchor="end"/>}
+    {visible.map((node,i)=>{
+      const chapter=story.chapters.find(c=>c.knowledgeNodeId===node.id);
+      const related=story.scenes.filter(s=>s.chapterId===chapter?.id&&s.type!=='overview');
+      const completed=related.length>0&&related.every(s=>s.end<=frame);
+      const active=scene.overview==='return'&&chapter?.id===scene.chapterId;
+      const color=completed?C.green:active?C.cyan:C.muted;
+      const x=(i%cols)*(cardW+gap),y=54+Math.floor(i/cols)*(cardH+gap);
+      return <Panel key={node.id} x={x} y={y} width={cardW} height={cardH} color={active||completed?color:C.line} active={active}>
+        <Pill x={24} y={22} text={String(page*capacity+i+1).padStart(2,'0')} size={23} color={color}/>
+        <Text x={24} y={106} width={cardW-48} text={node.title} size={portrait?33:34} weight={700} maxLines={2}/>
+        <Text x={24} y={cardH-71} width={cardW-48} text={node.displayGoal??node.goal??''} size={portrait?27:26} color={C.muted} maxLines={2}/>
+      </Panel>;
+    })}
+  </g>;
+}
+
+function Sequence({scene,knowledge,localFrame,fps,state,width,height}) {
+  const actors=(scene.actors?.length?scene.actors:(scene.items??[]).map(item=>item.objectId??item.id)).map(id=>{
+    const item=(scene.items??[]).find(item=>item.id===id||item.objectId===id);
+    return {...objectFor(knowledge,id),...item,id,label:item?.label??objectFor(knowledge,id)?.label??id};
+  });
+  const actorW=Math.min(360,width/actors.length-36),top=12,actorH=138;
+  const pos=new Map(actors.map((actor,i)=>[actor.id,{x:(i+.5)*width/actors.length,y:top+actorH}]));
+  const transfers=scene.actions.filter(action=>action.kind==='transfer');
+  const y0=228,last=height-62,rowGap=transfers.length>1?(last-y0)/(transfers.length-1):0;
+  return <g>
+    {actors.map(actor=>{
+      const point=pos.get(actor.id),active=actionActive(scene,actor.id,localFrame,fps),color=ink(actor.color);
+      return <g key={actor.id}>
+        <path d={'M'+point.x+' '+(top+actorH+12)+'V'+height} stroke={color} strokeWidth="2" strokeOpacity=".3" strokeDasharray="9 10"/>
+        <Panel x={point.x-actorW/2} y={top} width={actorW} height={actorH} color={active?color:C.line} active={active}>
+          <Text x={actorW/2} y={45} width={actorW-32} text={actor.label} size={31} weight={700} anchor="middle" maxLines={1}/>
+          <Text x={actorW/2} y={98} width={actorW-24} text={String(state[actor.id+'-state']??actor.detail??'准备就绪')} size={25} color={color} anchor="middle" maxLines={1}/>
+        </Panel>
+      </g>;
+    })}
+    {transfers.map((action,i)=>{
+      const from=pos.get(action.from)??pos.get((scene.items??[]).find(item=>item.id===action.from)?.objectId);
+      const to=pos.get(action.to)??pos.get((scene.items??[]).find(item=>item.id===action.to)?.objectId);
+      if(!from||!to)throw new Error('Sequence '+scene.id+' has no actor for '+action.id);
+      const p=actionProgress(scene,action,localFrame,fps),y=y0+i*rowGap,color=p>=1?C.green:C.cyan;
+      return <g key={action.id}>
+        <circle cx={width/2} cy={y+30} r="17" fill={C.card} stroke={p>.01?color:C.line}/>
+        <Text x={width/2} y={y+38} width={34} text={String(i+1)} size={22} color={p>.01?color:C.muted} anchor="middle"/>
+        <Arrow x1={from.x} y1={y} x2={to.x} y2={y} progress={p} color={color} label={action.label??action.text??''} size={27}/>
       </g>;
     })}
   </g>;
 }
 
-function Header({story}) {
-  const titleSize = glyphWidth(story.title) > 17 ? 56 : 64;
+function itemLabel(scene,item,localFrame,fps) {
+  const typing=scene.actions.find(action=>action.kind==='type'&&(action.target===item.id||action.target===item.objectId));
+  if(!typing)return item.label;
+  const p=actionProgress(scene,typing,localFrame,fps);
+  const letters=[...typing.text];
+  return letters.slice(0,Math.ceil(p*letters.length)).join('')+(p<1?'▌':'');
+}
+
+function graphLayout(scene,width,height) {
+  const items=scene.items??[],links=[...(scene.links??[]),...items.filter(item=>item.parentId).map(item=>({from:item.parentId,to:item.id}))];
+  const horizontal=scene.type!=='tree'&&width>1200;
+  const depths=new Map(items.map(item=>[item.id,0]));
+  for(let pass=0;pass<items.length;pass++){
+    let changed=false;
+    for(const link of links){
+      const next=Math.min(items.length-1,(depths.get(link.from)??0)+1);
+      if(next>(depths.get(link.to)??0)){depths.set(link.to,next);changed=true;}
+    }
+    if(!changed)break;
+  }
+  const maxDepth=Math.max(0,...depths.values()),w=Math.min(horizontal?310:width<1200?300:340,horizontal?width/Math.max(2,maxDepth+1)-60:width/2-24),h=116;
+  const treeSlots=new Map();let leafCount=0;
+  if(scene.type==='tree'){
+    const children=new Map(items.map(item=>[item.id,[...new Set(links.filter(link=>link.from===item.id).map(link=>link.to))]]));
+    const visit=(id,trail=new Set())=>{
+      if(treeSlots.has(id))return treeSlots.get(id);
+      if(trail.has(id))throw new Error('Tree '+scene.id+' contains a cycle. Use a branch or state scene for a loop.');
+      const nextTrail=new Set([...trail,id]),descendants=children.get(id)??[];
+      const childSlots=descendants.map(child=>visit(child,nextTrail));
+      const slot=childSlots.length?(Math.min(...childSlots)+Math.max(...childSlots))/2:leafCount++;
+      treeSlots.set(id,slot);return slot;
+    };
+    items.filter(item=>!links.some(link=>link.to===item.id)).forEach(item=>visit(item.id));
+    items.forEach(item=>visit(item.id));
+  }
+  const positioned=items.map(item=>{
+    const depth=depths.get(item.id),siblings=items.filter(candidate=>depths.get(candidate.id)===depth),index=siblings.indexOf(item);
+    const main=maxDepth?depth/maxDepth:.5,cross=scene.type==='tree'?(treeSlots.get(item.id)+.5)/Math.max(1,leafCount):(index+.5)/siblings.length;
+    const cx=item.x!==undefined?item.x*width:horizontal?w/2+12+main*(width-w-24):cross*width;
+    const cy=item.y!==undefined?item.y*height:horizontal?cross*height:h/2+12+main*(height-h-24);
+    return {...item,cx:Math.max(w/2+4,Math.min(width-w/2-4,cx)),cy:Math.max(h/2+4,Math.min(height-h/2-4,cy)),w,h};
+  });
+  for(let i=0;i<positioned.length;i++)for(let j=i+1;j<positioned.length;j++){
+    const a=positioned[i],b=positioned[j];
+    if(Math.abs(a.cx-b.cx)<(a.w+b.w)/2+18&&Math.abs(a.cy-b.cy)<(a.h+b.h)/2+18)
+      throw new Error('Graph '+scene.id+' has crowded nodes '+a.id+' / '+b.id+'. Split the mechanism or reflow its items.');
+  }
+  return {items:positioned,links:links.filter((link,i)=>links.findIndex(candidate=>candidate.from===link.from&&candidate.to===link.to)===i),horizontal};
+}
+
+function revealProgress(scene,item,localFrame,fps) {
+  const actions=scene.actions.filter(action=>action.kind==='reveal'&&(action.target===item.id||action.target===item.objectId));
+  if(actions.length)return Math.max(...actions.map(action=>actionProgress(scene,action,localFrame,fps)));
+  const incoming=scene.actions.filter(action=>action.kind==='transfer'&&(action.to===item.id||action.to===item.objectId));
+  return incoming.length?Math.min(...incoming.map(action=>actionProgress(scene,action,localFrame,fps))):1;
+}
+
+function connector(from,to,horizontal) {
+  if(horizontal){
+    const sign=to.cx>=from.cx?1:-1,x1=from.cx+sign*from.w/2,x2=to.cx-sign*to.w/2,mid=(x1+x2)/2;
+    return {x1,y1:from.cy,x2,y2:to.cy,path:'M'+x1+' '+from.cy+'H'+mid+'V'+to.cy+'H'+x2,points:{x:mid,y:to.cy},route:[{x:x1,y:from.cy},{x:mid,y:from.cy},{x:mid,y:to.cy},{x:x2,y:to.cy}]};
+  }
+  const sign=to.cy>=from.cy?1:-1,y1=from.cy+sign*from.h/2,y2=to.cy-sign*to.h/2,mid=(y1+y2)/2;
+  return {x1:from.cx,y1,x2:to.cx,y2,path:'M'+from.cx+' '+y1+'V'+mid+'H'+to.cx+'V'+y2,points:{x:to.cx,y:mid},route:[{x:from.cx,y:y1},{x:from.cx,y:mid},{x:to.cx,y:mid},{x:to.cx,y:y2}]};
+}
+
+function Graph({scene,knowledge,localFrame,fps,width,height}) {
+  const layout=graphLayout(scene,width,height),lookup=new Map(layout.items.map(item=>[item.id,item]));
   return <g>
-    <rect x="64" y="115" width="38" height="5" rx="2" fill={C.cyan}/>
-    <Text x={118} y={126} width={800} text={story.kicker} size={24} color={C.muted}/>
-    <Text x={64} y={215} width={952} text={story.title} size={titleSize} weight={750} lineHeight={1.3}/>
-    <Text x={66} y={glyphWidth(story.title) > 952 / titleSize ? 320 : 280} width={946} text={story.subtitle} size={26} color={C.muted}/>
+    {layout.links.map((link,i)=>{
+      const from=lookup.get(link.from),to=lookup.get(link.to);
+      if(!from||!to)return null;
+      const action=scene.actions.find(action=>action.kind==='transfer'&&action.from===link.from&&action.to===link.to);
+      const p=action?actionProgress(scene,action,localFrame,fps):scene.type==='branch'&&scene.actions.some(action=>action.kind==='transfer')?0:Math.min(revealProgress(scene,from,localFrame,fps),revealProgress(scene,to,localFrame,fps));
+      const points=connector(from,to,layout.horizontal);
+      return <Arrow key={i} {...points} label={link.label??action?.label??''} progress={p} color={ink(to.color??itemObject(knowledge,to)?.color)} size={24}/>;
+    })}
+    {layout.items.map(item=>{
+      const p=revealProgress(scene,item,localFrame,fps),active=actionActive(scene,item.id,localFrame,fps)||actionActive(scene,item.objectId,localFrame,fps);
+      const color=ink(item.color??itemObject(knowledge,item)?.color);
+      const lines=textLines(item.label,item.w-32,29).length;
+      return <Panel key={item.id} x={item.cx-item.w/2} y={item.cy-item.h/2} width={item.w} height={item.h} color={active||p>=1?color:C.line} opacity={mix(.17,1,ease(p))} active={active}>
+        <Text x={item.w/2} y={item.detail?38:lines>1?44:68} width={item.w-32} text={itemLabel(scene,item,localFrame,fps)} size={29} weight={650} anchor="middle" maxLines={2}/>
+        {item.detail&&<Text x={item.w/2} y={89} width={item.w-24} text={item.detail} size={24} color={C.muted} anchor="middle" maxLines={1}/>}
+      </Panel>;
+    })}
   </g>;
 }
 
-function Footer({story, timeline}) {
-  const n = story.steps.length, gap = 9, width = (952 - gap * (n - 1)) / n;
-  const focus = timeline.phase === 'body' ? story.steps[timeline.active] : null;
+function State({story,scene,localFrame,fps,state,width,height,frame}) {
+  const metrics=scene.metrics??[],portrait=width<1200,columns=portrait?Math.min(2,metrics.length):Math.min(3,metrics.length);
+  const gap=22,rows=Math.ceil(metrics.length/Math.max(1,columns)),cardW=(width-gap*(columns-1))/Math.max(1,columns),cardH=portrait?220:216;
+  const historyHeight=Math.max(160,height-rows*(cardH+gap)-12);
+  const historyCapacity=Math.max(1,Math.floor((historyHeight-105)/(portrait?110:61)));
+  const history=story.scenes.filter(candidate=>candidate.type==='state'&&candidate.start<=frame).slice(-historyCapacity);
   return <g>
-    {story.steps.map((step, i) => <rect key={step.id} x={64 + i * (width + gap)} y="1690" width={width} height="5" rx="2.5" fill={timeline.phase === 'overview' ? C.line : i < timeline.completed ? C.green : i === timeline.active ? C.cyan : C.line}/>)}
-    <Text x={64} y={1754} width={952} text={focus ? focus.label : timeline.phase === 'outro' ? '全貌 · 完整结果' : '先看全貌，再看每一步'} size={29} color={focus ? C.cyan : C.green} weight={650}/>
-    <Text x={64} y={1803} width={952} text={focus ? (timeline.progress > 0.8 ? focus.result : focus.caption) : story.summary} size={26} color={C.muted}/>
-  </g>;
-}
-
-function ListLayout({story, timeline}) {
-  const gap = 14, h = Math.min(174, (1260 - gap * (story.steps.length - 1)) / story.steps.length);
-  const y0 = 367 + Math.max(0, (1260 - (h + gap) * story.steps.length + gap) / 2);
-  return <g>{story.steps.map((step, i) => {
-    const active = timeline.active === i;
-    const p = stepProgress(timeline, i), color = tone(step.color);
-    const opacity = timeline.phase !== 'body' || active || i < timeline.active ? 1 : 0.42;
-    return <g key={step.id} opacity={opacity}>
-      <Panel x={64} y={y0 + i * (h + gap)} width={952} height={h} active={active} color={active ? color : `${color}55`}>
-        <rect x="0" y="16" width="4" height={h - 32} rx="2" fill={color}/>
-        <Text x={28} y={h / 2 + 11} width={146} text={step.badge ?? String(i + 1).padStart(2, '0')} size={step.badge?.length > 4 ? 35 : 42} color={color} weight={750}/>
-        <Text x={192} y={h / 2 - 9} width={310} text={step.label} size={31} weight={700}/>
-        <Text x={192} y={h / 2 + 31} width={320} text={step.caption} size={23} color={C.muted}/>
-        <g transform={`translate(526 ${Math.max(8, (h - 108) / 2)})`}><Diagram diagram={step.diagram} width={408} height={108} progress={p} color={color} compact/></g>
-      </Panel>
-    </g>;
-  })}</g>;
-}
-
-function GridLayout({story, timeline}) {
-  const columns = 2, gap = 20, width = 466, rows = Math.ceil(story.steps.length / columns), height = (1260 - (rows - 1) * gap) / rows;
-  return <g>{story.steps.map((step, i) => {
-    const active = timeline.active === i, p = stepProgress(timeline, i);
-    const color = timeline.phase !== 'overview' && (timeline.phase === 'outro' || i < timeline.active) ? C.green : tone(step.color);
-    const opacity = timeline.phase !== 'body' || active || i < timeline.active ? 1 : 0.28;
-    const hasInput = Boolean(step.input);
-    return <g key={step.id} opacity={opacity}>
-      <Panel x={64 + i % columns * (width + gap)} y={367 + Math.floor(i / columns) * (height + gap)} width={width} height={height} color={active ? C.cyan : C.line} active={active}>
-        <circle cx="33" cy="35" r="13" fill={color}/><text x="33" y="41" textAnchor="middle" fill={C.bg} fontSize="18" fontWeight="750">{i + 1}</text>
-        <Text x={57} y={45} width={width - 78} text={step.label} size={30} weight={700}/>
-        {hasInput && <g>
-          <rect x="22" y="67" width={width - 44} height="44" rx="8" fill="#030b14"/>
-          <Text x={35} y={96} width={width - 70} text={[...step.input].slice(0, Math.ceil(clamp(p / 0.22) * [...step.input].length)).join('')} size={21} color={color}/>
-        </g>}
-        <g transform={`translate(12 ${hasInput ? 116 : 75})`}><Diagram diagram={step.diagram} width={width - 24} height={height - (hasInput ? 215 : 174)} progress={p} color={color}/></g>
-        <path d={`M24 ${height - 101}h${width - 48}`} stroke={C.line}/>
-        <Text x={24} y={height - 62} width={width - 48} text={p > 0.8 ? step.result : step.caption} size={25} color={p > 0.8 ? color : C.muted}/>
-      </Panel>
-    </g>;
-  })}</g>;
-}
-
-function StateLayout({story, timeline}) {
-  const active = timeline.phase === 'outro' ? story.steps.length - 1 : Math.max(0, timeline.active);
-  const step = story.steps[active];
-  const p = timeline.phase === 'overview' ? 0 : stepProgress(timeline, active), color = tone(step.color);
-  const itemHeight = Math.min(146, 1260 / story.steps.length - 14);
-  return <g>
-    {story.steps.map((s, i) => <g key={s.id} opacity={timeline.phase !== 'body' || i <= active ? 1 : 0.38}>
-      <Panel x={64} y={367 + i * (itemHeight + 14)} width={278} height={itemHeight} color={timeline.active === i ? C.cyan : C.line} active={timeline.active === i}>
-        <Text x={22} y={32} width={210} text={`${String(i + 1).padStart(2, '0')}  ${i < timeline.completed ? '已完成' : timeline.active === i ? '进行中' : '步骤'}`} size={21} color={i < timeline.completed ? C.green : C.muted}/>
-        <Text x={22} y={77} width={234} text={s.label} size={29} weight={700}/>
-      </Panel>
-    </g>)}
-    <Panel x={364} y={367} width={652} height={226}>
-      <Text x={26} y={42} width={600} text={timeline.phase === 'overview' ? '初始状态' : timeline.phase === 'outro' ? '最终状态' : '当前状态'} size={24} color={C.muted}/>
-      {story.metrics.map((metric, i) => {
-        const width = 600 / story.metrics.length, value = metricValue(story, metric, timeline);
-        const text = metric.prefix + Math.round(value).toLocaleString('en-US') + metric.suffix;
-        const size = Math.min(story.metrics.length === 3 ? 39 : 57, (width - 28) / (glyphWidth(text) * 1.3));
-        return <g key={metric.id} transform={`translate(${26 + width * i} 0)`}>
-          <Text x={0} y={99} width={width - 10} text={metric.label} size={25} color={C.muted}/>
-          <Text x={0} y={169} width={width - 10} text={text} size={size} color={i === 0 ? C.cyan : C.text} weight={750}/>
+    {metrics.map((metric,i)=>{
+      const x=(i%columns)*(cardW+gap),y=Math.floor(i/columns)*(cardH+gap),value=state[metric.key]??0,color=ink(metric.color,i===0?C.cyan:C.green);
+      const active=scene.actions.some(action=>action.set&&Object.hasOwn(action.set,metric.key)&&actionProgress(scene,action,localFrame,fps)>0&&actionProgress(scene,action,localFrame,fps)<1);
+      const formatted=(metric.prefix??'')+(typeof value==='number'?Number(value.toFixed(2)).toLocaleString('en-US'):String(value))+(metric.suffix??'');
+      return <Panel key={metric.key} x={x} y={y} width={cardW} height={cardH} active={active} color={active?color:C.line}>
+        <Text x={28} y={53} width={cardW-56} text={metric.label} size={28} color={C.muted}/>
+        <Text x={28} y={151} width={cardW-56} text={formatted} size={portrait?54:64} color={color} weight={750} maxLines={1}/>
+      </Panel>;
+    })}
+    <Panel y={rows*(cardH+gap)+12} width={width} height={Math.max(160,height-rows*(cardH+gap)-12)}>
+      <Text x={32} y={49} width={width-64} text="变化如何累积" size={30} weight={650}/>
+      {history.map((candidate,i)=>{
+        const complete=candidate.end<=frame;
+        const current=candidate.id===scene.id;
+        const lineY=107+i*(portrait?110:61);
+        const act=currentAction(candidate,current?localFrame:candidate.frames,fps);
+        return <g key={candidate.id} opacity={current||complete?1:.45}>
+          <circle cx={40} cy={lineY-10} r="6" fill={complete?C.green:current?C.cyan:C.line}/>
+          <Text x={64} y={lineY} width={width-110} text={current&&act?.label?act.label:current&&localFrame<candidate.readFrames+candidate.actFrames?candidate.title:candidate.result??candidate.title} size={portrait?29:28} color={complete?C.green:C.text} maxLines={portrait?2:1}/>
         </g>;
       })}
     </Panel>
-    <Panel x={364} y={613} width={652} height={505} color={timeline.phase === 'body' ? color : C.line} active={timeline.phase === 'body'}>
-      <Text x={28} y={51} width={590} text={step.label} size={36} weight={700}/>
-      <rect x="26" y="78" width="600" height="56" rx="9" fill="#030b14"/>
-      <Text x={42} y={114} width={565} text={[...(step.input ?? step.caption)].slice(0, Math.ceil(clamp(p / 0.24) * [...(step.input ?? step.caption)].length)).join('')} size={25} color={color}/>
-      <g transform="translate(22 142)"><Diagram diagram={step.diagram} width={608} height={245} progress={p} color={color}/></g>
-      <Text x={28} y={444} width={590} text={p > 0.8 ? step.result : step.caption} size={27} color={p > 0.8 ? C.green : C.muted}/>
-    </Panel>
-    <Panel x={364} y={1138} width={652} height={489}>
-      <Text x={28} y={46} width={590} text="变化记录" size={26} weight={650}/>
-      {story.steps.map((s, i) => {
-        const visible = timeline.phase === 'outro' || i < timeline.completed || (i === timeline.active && p > 0.78);
-        const rowHeight = Math.min(65, 392 / story.steps.length);
-        return <g key={s.id} opacity={visible ? 1 : 0.15}>
-          <circle cx="34" cy={87 + i * rowHeight} r="4" fill={visible ? tone(s.color) : C.line}/>
-          <Text x={54} y={96 + i * rowHeight} width={563} text={s.result} size={24} color={visible ? C.text : C.muted}/>
-        </g>;
-      })}
-    </Panel>
   </g>;
 }
 
-export function Scene({story}) {
-  const frame = useCurrentFrame();
-  const timeline = timelineAt(story, frame);
-  return <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 1080 1920" style={{fontFamily: FONT, background: C.bg}}>
+function List({scene,knowledge,localFrame,fps,width,height}) {
+  const items=scene.items??[],portrait=width<1200,columns=portrait?1:items.length>5?2:1;
+  const maxRows=portrait?10:5,capacity=maxRows*columns,gap=portrait?16:22;
+  const focused=scene.actions.find(action=>['highlight','reveal','state','transfer'].includes(action.kind)&&actionProgress(scene,action,localFrame,fps)>0&&actionProgress(scene,action,localFrame,fps)<1);
+  const focusIndex=items.findIndex(item=>actionTarget(focused??{},item.id));
+  const page=focusIndex>=0?Math.floor(focusIndex/capacity):Math.min(Math.ceil(items.length/capacity)-1,Math.floor(clamp(localFrame/Math.max(1,scene.frames-1))*Math.ceil(items.length/capacity)));
+  const shown=items.slice(page*capacity,(page+1)*capacity);
+  const rows=Math.ceil(shown.length/columns),rowH=Math.min(portrait?134:116,(height-(rows-1)*gap)/Math.max(1,rows)),cardW=(width-(columns-1)*gap)/columns;
+  return <g>
+    {shown.map((item,i)=>{
+      const active=actionActive(scene,item.id,localFrame,fps),color=ink(item.color??itemObject(knowledge,item)?.color);
+      const x=Math.floor(i/rows)*(cardW+gap),y=(i%rows)*(rowH+gap);
+      const p=revealProgress(scene,item,localFrame,fps);
+      return <Panel key={item.id} x={x} y={y} width={cardW} height={rowH} color={active?color:C.line} active={active} opacity={mix(.35,1,p)}>
+        <rect x="0" y="18" width="4" height={rowH-36} rx="2" fill={color}/>
+        <Text x={27} y={rowH/2+11} width={115} text={item.badge??String(page*capacity+i+1).padStart(2,'0')} size={33} color={color} weight={700} maxLines={1}/>
+        <Text x={160} y={item.detail?rowH/2-7:rowH/2+11} width={cardW-188} text={itemLabel(scene,item,localFrame,fps)} size={30} weight={650} maxLines={1}/>
+        {item.detail&&<Text x={160} y={rowH/2+32} width={cardW-188} text={item.detail} size={26} color={active?color:C.muted} maxLines={1}/>}
+      </Panel>;
+    })}
+    {items.length>capacity&&<Text x={width} y={height+34} width={200} text={String(page+1)+' / '+Math.ceil(items.length/capacity)} size={26} color={C.muted} anchor="end"/>}
+  </g>;
+}
+
+function Linked({scene,knowledge,localFrame,fps,width,height}) {
+  const portrait=width<1200,gap=portrait?32:30,panelW=portrait?width:(width-2*gap)/3,panelH=portrait?(height-2*gap)/3:height;
+  const columns=[0,1,2],positions=new Map();
+  for(const column of columns){
+    const items=(scene.items??[]).filter(item=>(item.column??0)===column);
+    const originX=portrait?0:column*(panelW+gap),originY=portrait?column*(panelH+gap):0;
+    const cardH=Math.min(112,(panelH-112-20*Math.max(0,items.length-1))/Math.max(1,items.length));
+    items.forEach((item,i)=>positions.set(item.id,{...item,cx:originX+panelW/2,cy:originY+104+cardH/2+i*(cardH+20),w:panelW-48,h:cardH}));
+  }
+  if(scene.data?.code&&!scene.items?.some(item=>(item.column??0)===0)&&112+scene.data.code.length*38>panelH-12)throw new Error('Linked code in '+scene.id+' exceeds the readable panel. Split this source into more shots.');
+  const headings=scene.data?.headings??['输入','结构','结果'];
+  return <g>
+    {columns.map(column=><Panel key={column} x={portrait?0:column*(panelW+gap)} y={portrait?column*(panelH+gap):0} width={panelW} height={panelH}>
+      <Text x={26} y={52} width={panelW-52} text={headings[column]} size={31} color={[C.cyan,C.purple,C.green][column]} weight={700}/>
+      {column===0&&scene.data?.code&&!scene.items?.some(item=>(item.column??0)===0)&&scene.data.code.map((line,i)=><Text key={i} x={24} y={112+i*38} width={panelW-48} text={line} size={26} color={C.cyan} style={{fontFamily:'Consolas,monospace'}}/>)}
+    </Panel>)}
+    {(scene.links??[]).map((link,i)=>{
+      const from=positions.get(link.from),to=positions.get(link.to);if(!from||!to)return null;
+      const action=scene.actions.find(action=>action.kind==='transfer'&&action.from===link.from&&action.to===link.to);
+      let geometry=connector(from,to,!portrait);
+      if(Math.abs((from.column??0)-(to.column??0))>1){
+        if(portrait){
+          const x=width-12,y1=from.cy+from.h/2,y2=to.cy-to.h/2;
+          geometry={x1:from.cx,y1,x2:to.cx,y2,path:'M'+from.cx+' '+y1+'H'+x+'V'+y2+'H'+to.cx,points:{x,y:y2},route:[{x:from.cx,y:y1},{x,y:y1},{x,y:y2},{x:to.cx,y:y2}]};
+        }else{
+          const sign=to.cx>from.cx?1:-1,x1=from.cx+sign*from.w/2,x2=to.cx-sign*to.w/2;
+          const low=Math.max(...[...positions.values()].map(item=>item.cy+item.h/2));
+          const lane=height-low>70?height-38:84,near=x1+sign*14,far=x2-sign*14;
+          geometry={x1,y1:from.cy,x2,y2:to.cy,path:'M'+x1+' '+from.cy+'H'+near+'V'+lane+'H'+far+'V'+to.cy+'H'+x2,points:{x:far,y:to.cy},route:[{x:x1,y:from.cy},{x:near,y:from.cy},{x:near,y:lane},{x:far,y:lane},{x:far,y:to.cy},{x:x2,y:to.cy}]};
+        }
+      }
+      return <Arrow key={i} {...geometry} progress={action?actionProgress(scene,action,localFrame,fps):Math.min(revealProgress(scene,from,localFrame,fps),revealProgress(scene,to,localFrame,fps))} color={C.cyan} label={link.label??''} size={24}/>;
+    })}
+    {[...positions.values()].map(item=>{
+      const p=revealProgress(scene,item,localFrame,fps),active=actionActive(scene,item.id,localFrame,fps),color=ink(item.color??itemObject(knowledge,item)?.color,[C.cyan,C.purple,C.green][item.column??0]);
+      return <Panel key={item.id} x={item.cx-item.w/2} y={item.cy-item.h/2} width={item.w} height={item.h} color={active?color:C.line} active={active} opacity={mix(.12,1,p)} fill={C.bg} radius={12}>
+        <Text x={20} y={item.h/2+(item.detail?-6:10)} width={item.w-40} text={itemLabel(scene,item,localFrame,fps)} size={29} color={color} weight={650} maxLines={2}/>
+        {item.detail&&<Text x={20} y={item.h/2+33} width={item.w-40} text={item.detail} size={24} color={C.muted} maxLines={1}/>}
+      </Panel>;
+    })}
+  </g>;
+}
+
+function Content(props) {
+  const {scene}=props;
+  if(scene.type==='overview')return <Overview {...props}/>;
+  if(scene.type==='sequence')return <Sequence {...props}/>;
+  if(['tree','parallel','branch'].includes(scene.type))return <Graph {...props}/>;
+  if(scene.type==='state')return <State {...props}/>;
+  if(scene.type==='list')return <List {...props}/>;
+  if(scene.type==='linked')return <Linked {...props}/>;
+  if(scene.type==='custom'){
+    const Component=customScenes[scene.custom];
+    if(typeof Component!=='function')throw new Error('Custom scene "'+scene.custom+'" in '+scene.id+' is not registered in src/custom-scenes.jsx');
+    return <Component {...props} actionProgress={action=>actionProgress(scene,action,props.localFrame,props.fps)}/>;
+  }
+  throw new Error('Unsupported scene type: '+scene.type);
+}
+
+export function Scene({story,knowledge}) {
+  const frame=useCurrentFrame(),timeline=timelineAt(story,frame),{scene,localFrame}=timeline;
+  const portrait=story.width<story.height,canvasHeight=portrait?1920:1080,canvasWidth=Math.round(canvasHeight*story.width/story.height);
+  const margin=portrait?54:82,width=canvasWidth-margin*2;
+  const titleSize=portrait?45:49,titleY=portrait?166:122;
+  const titleLines=textLines(scene.title,width,titleSize).length;
+  const explanationY=titleY+(titleLines-1)*titleSize*1.3+52;
+  const explanationLines=Math.max(1,textLines(scene.explanation??'',width,portrait?29:27).length);
+  const navY=explanationY+explanationLines*(portrait?38:36)+20;
+  const contentY=navY+(portrait?105:94),footerY=canvasHeight-(portrait?150:126),height=footerY-contentY-28;
+  if(height<(portrait?650:350))throw new Error('Scene '+scene.id+' has insufficient readable content space. Shorten the heading or split this scene.');
+  const state=stateAt(story,frame),active=currentAction(scene,localFrame,story.fps);
+  const footerText=timeline.phase==='read'?(scene.explanation??'先看对象与关系'):timeline.phase==='hold'?(scene.result??'结果保留，继续下一步'):(active?.label??active?.text??'观察当前变化');
+  return <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox={'0 0 '+canvasWidth+' '+canvasHeight} style={{fontFamily:FONT,background:C.bg}}>
     <defs>
-      <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#101f31"/><stop offset="1" stopColor="#080f1b"/></linearGradient>
-      <radialGradient id="halo"><stop stopColor="#123954" stopOpacity="0.24"/><stop offset="1" stopColor="#040914" stopOpacity="0"/></radialGradient>
-      <pattern id="grid" width="52" height="52" patternUnits="userSpaceOnUse"><path d="M52 0H0V52" fill="none" stroke="#1c334d" strokeWidth="0.6" opacity="0.18"/></pattern>
+      <linearGradient id="km-panel" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#102033"/><stop offset="1" stopColor="#09121f"/></linearGradient>
+      <radialGradient id="km-halo"><stop stopColor="#14475e" stopOpacity=".27"/><stop offset="1" stopColor={C.bg} stopOpacity="0"/></radialGradient>
+      <pattern id="km-grid" width="54" height="54" patternUnits="userSpaceOnUse"><path d="M54 0H0V54" fill="none" stroke="#29425e" strokeWidth=".7" opacity=".15"/></pattern>
+      <clipPath id="km-content"><rect width={width} height={Math.max(1,height)} rx="4"/></clipPath>
     </defs>
-    <rect width="1080" height="1920" fill={C.bg}/>
-    <rect width="1080" height="1920" fill="url(#grid)"/>
-    <ellipse cx="850" cy="400" rx="780" ry="640" fill="url(#halo)"/>
-    <Header story={story}/>
-    {story.layout === 'list' ? <ListLayout story={story} timeline={timeline}/> : story.layout === 'grid' ? <GridLayout story={story} timeline={timeline}/> : <StateLayout story={story} timeline={timeline}/>}
-    <Footer story={story} timeline={timeline}/>
+    <rect width={canvasWidth} height={canvasHeight} fill={C.bg}/>
+    <rect width={canvasWidth} height={canvasHeight} fill="url(#km-grid)"/>
+    <ellipse cx={canvasWidth*.76} cy={canvasHeight*.25} rx={canvasWidth*.65} ry={canvasHeight*.62} fill="url(#km-halo)"/>
+    <g transform={'translate('+margin+' 0)'}>
+      <rect x="0" y={portrait?66:49} width="38" height="5" rx="2" fill={C.cyan}/>
+      <Text x={54} y={portrait?79:62} width={width-210} text={story.title} size={portrait?27:25} color={C.muted} maxLines={1}/>
+      <Text x={width} y={portrait?79:62} width={160} text={String(timeline.index+1).padStart(2,'0')+' / '+String(story.scenes.length).padStart(2,'0')} size={23} color={C.muted} anchor="end"/>
+      <Text x={0} y={titleY} width={width} text={scene.title} size={titleSize} weight={750}/>
+      <Text x={0} y={explanationY} width={width} text={scene.explanation??''} size={portrait?29:27} color={C.muted}/>
+    </g>
+    <Navigation story={story} knowledge={knowledge} scene={scene} frame={frame} x={margin} y={navY} width={width} portrait={portrait}/>
+    <g transform={'translate('+margin+' '+(contentY+mix(9,0,ease(clamp(localFrame/9))))+')'} opacity={mix(.65,1,clamp(localFrame/7))} clipPath="url(#km-content)">
+      <Content story={story} knowledge={knowledge} scene={scene} localFrame={localFrame} fps={story.fps} state={state} width={width} height={height} frame={frame}/>
+    </g>
+    <g transform={'translate('+margin+' '+footerY+')'}>
+      <rect width={width} height="3" rx="1.5" fill={C.line}/>
+      <rect width={width*clamp((frame+1)/story.totalFrames)} height="3" rx="1.5" fill={C.cyan}/>
+      <Text x={0} y={portrait?56:48} width={width} text={timeline.phase==='hold'?'结果':'当前动作'} size={portrait?26:24} color={timeline.phase==='hold'?C.green:C.cyan} weight={650}/>
+      <Text x={0} y={portrait?103:90} width={width} text={footerText} size={portrait?29:27} color={C.text} maxLines={2}/>
+    </g>
   </svg>;
 }

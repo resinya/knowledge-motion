@@ -1,0 +1,381 @@
+{
+  "schemaVersion": 2,
+  "title": "常用网络端口，一图速查",
+  "subtitle": "常见默认配置；实际以服务设置为准",
+  "canvas": {
+    "orientation": "portrait"
+  },
+  "chapters": [
+    {
+      "id": "basic",
+      "title": "基础服务",
+      "knowledgeNodeId": "basic"
+    },
+    {
+      "id": "web",
+      "title": "网页访问",
+      "knowledgeNodeId": "web"
+    },
+    {
+      "id": "development",
+      "title": "开发服务",
+      "knowledgeNodeId": "development"
+    },
+    {
+      "id": "data",
+      "title": "数据服务",
+      "knowledgeNodeId": "data"
+    }
+  ],
+  "initialState": {},
+  "scenes": [
+    {
+      "id": "opening",
+      "type": "overview",
+      "title": "先认识本片要回答的问题",
+      "knowledgeNodeIds": [
+        "basic",
+        "web",
+        "development",
+        "data"
+      ],
+      "explanation": "先认清关键对象，再进入每个模块",
+      "result": "下面展开内部过程",
+      "timing": {
+        "read": 1,
+        "act": 0.5,
+        "hold": 1
+      },
+      "overview": "all"
+    },
+    {
+      "id": "basic-list",
+      "type": "list",
+      "chapterId": "basic",
+      "title": "基础服务：逐项认识端口",
+      "knowledgeNodeIds": [
+        "basic"
+      ],
+      "explanation": "远程管理与域名查询",
+      "result": "SSH 22 · DNS 53",
+      "timing": {
+        "read": 1.5,
+        "act": 3,
+        "hold": 1.5
+      },
+      "items": [
+        {
+          "id": "ssh",
+          "label": "SSH",
+          "badge": "22",
+          "detail": "安全远程登录",
+          "objectId": "ssh"
+        },
+        {
+          "id": "dns",
+          "label": "DNS",
+          "badge": "53",
+          "detail": "域名解析为地址",
+          "objectId": "dns"
+        }
+      ],
+      "actions": [
+        {
+          "id": "focus-ssh",
+          "kind": "highlight",
+          "target": "ssh",
+          "at": 0,
+          "duration": 1.5,
+          "label": "SSH：22"
+        },
+        {
+          "id": "focus-dns",
+          "kind": "highlight",
+          "target": "dns",
+          "at": 1.5,
+          "duration": 1.5,
+          "label": "DNS：53"
+        }
+      ]
+    },
+    {
+      "id": "return-basic",
+      "type": "overview",
+      "chapterId": "basic",
+      "title": "先认识本片要回答的问题",
+      "knowledgeNodeIds": [
+        "basic",
+        "web",
+        "development",
+        "data"
+      ],
+      "explanation": "先认清关键对象，再进入每个模块",
+      "result": "下面展开内部过程",
+      "timing": {
+        "read": 1,
+        "act": 0.5,
+        "hold": 1
+      },
+      "overview": "return"
+    },
+    {
+      "id": "web-list",
+      "type": "list",
+      "chapterId": "web",
+      "title": "网页访问：逐项认识端口",
+      "knowledgeNodeIds": [
+        "web"
+      ],
+      "explanation": "请求与加密网页通信",
+      "result": "HTTP 80 · HTTPS 443",
+      "timing": {
+        "read": 1.5,
+        "act": 3,
+        "hold": 1.5
+      },
+      "items": [
+        {
+          "id": "http",
+          "label": "HTTP",
+          "badge": "80",
+          "detail": "网页请求与响应",
+          "objectId": "http"
+        },
+        {
+          "id": "https",
+          "label": "HTTPS",
+          "badge": "443",
+          "detail": "通过 TLS 保护通信",
+          "objectId": "https"
+        }
+      ],
+      "actions": [
+        {
+          "id": "focus-http",
+          "kind": "highlight",
+          "target": "http",
+          "at": 0,
+          "duration": 1.5,
+          "label": "HTTP：80"
+        },
+        {
+          "id": "focus-https",
+          "kind": "highlight",
+          "target": "https",
+          "at": 1.5,
+          "duration": 1.5,
+          "label": "HTTPS：443"
+        }
+      ]
+    },
+    {
+      "id": "return-web",
+      "type": "overview",
+      "chapterId": "web",
+      "title": "先认识本片要回答的问题",
+      "knowledgeNodeIds": [
+        "basic",
+        "web",
+        "development",
+        "data"
+      ],
+      "explanation": "先认清关键对象，再进入每个模块",
+      "result": "下面展开内部过程",
+      "timing": {
+        "read": 1,
+        "act": 0.5,
+        "hold": 1
+      },
+      "overview": "return"
+    },
+    {
+      "id": "development-list",
+      "type": "list",
+      "chapterId": "development",
+      "title": "开发服务：逐项认识端口",
+      "knowledgeNodeIds": [
+        "development"
+      ],
+      "explanation": "区分示例与注册服务",
+      "result": "开发服务示例 3000 · HTTP 备用 8080",
+      "timing": {
+        "read": 1.5,
+        "act": 3,
+        "hold": 1.5
+      },
+      "items": [
+        {
+          "id": "dev",
+          "label": "开发服务示例",
+          "badge": "3000",
+          "detail": "本片示例，可自行配置",
+          "objectId": "dev"
+        },
+        {
+          "id": "alternate",
+          "label": "HTTP 备用",
+          "badge": "8080",
+          "detail": "常见备用网页端口",
+          "objectId": "alternate"
+        }
+      ],
+      "actions": [
+        {
+          "id": "focus-dev",
+          "kind": "highlight",
+          "target": "dev",
+          "at": 0,
+          "duration": 1.5,
+          "label": "开发服务示例：3000"
+        },
+        {
+          "id": "focus-alternate",
+          "kind": "highlight",
+          "target": "alternate",
+          "at": 1.5,
+          "duration": 1.5,
+          "label": "HTTP 备用：8080"
+        }
+      ]
+    },
+    {
+      "id": "return-development",
+      "type": "overview",
+      "chapterId": "development",
+      "title": "先认识本片要回答的问题",
+      "knowledgeNodeIds": [
+        "basic",
+        "web",
+        "development",
+        "data"
+      ],
+      "explanation": "先认清关键对象，再进入每个模块",
+      "result": "下面展开内部过程",
+      "timing": {
+        "read": 1,
+        "act": 0.5,
+        "hold": 1
+      },
+      "overview": "return"
+    },
+    {
+      "id": "data-list",
+      "type": "list",
+      "chapterId": "data",
+      "title": "数据服务：逐项认识端口",
+      "knowledgeNodeIds": [
+        "data"
+      ],
+      "explanation": "常见产品的默认端口",
+      "result": "MySQL 3306 · PostgreSQL 5432 · Redis 6379 · MongoDB 27017",
+      "timing": {
+        "read": 1.5,
+        "act": 6,
+        "hold": 1.5
+      },
+      "items": [
+        {
+          "id": "mysql",
+          "label": "MySQL",
+          "badge": "3306",
+          "detail": "关系型数据库",
+          "objectId": "mysql"
+        },
+        {
+          "id": "postgres",
+          "label": "PostgreSQL",
+          "badge": "5432",
+          "detail": "关系型数据库",
+          "objectId": "postgres"
+        },
+        {
+          "id": "redis",
+          "label": "Redis",
+          "badge": "6379",
+          "detail": "内存数据服务",
+          "objectId": "redis"
+        },
+        {
+          "id": "mongo",
+          "label": "MongoDB",
+          "badge": "27017",
+          "detail": "文档型数据库",
+          "objectId": "mongo"
+        }
+      ],
+      "actions": [
+        {
+          "id": "focus-mysql",
+          "kind": "highlight",
+          "target": "mysql",
+          "at": 0,
+          "duration": 1.5,
+          "label": "MySQL：3306"
+        },
+        {
+          "id": "focus-postgres",
+          "kind": "highlight",
+          "target": "postgres",
+          "at": 1.5,
+          "duration": 1.5,
+          "label": "PostgreSQL：5432"
+        },
+        {
+          "id": "focus-redis",
+          "kind": "highlight",
+          "target": "redis",
+          "at": 3,
+          "duration": 1.5,
+          "label": "Redis：6379"
+        },
+        {
+          "id": "focus-mongo",
+          "kind": "highlight",
+          "target": "mongo",
+          "at": 4.5,
+          "duration": 1.5,
+          "label": "MongoDB：27017"
+        }
+      ]
+    },
+    {
+      "id": "return-data",
+      "type": "overview",
+      "chapterId": "data",
+      "title": "先认识本片要回答的问题",
+      "knowledgeNodeIds": [
+        "basic",
+        "web",
+        "development",
+        "data"
+      ],
+      "explanation": "先认清关键对象，再进入每个模块",
+      "result": "下面展开内部过程",
+      "timing": {
+        "read": 1,
+        "act": 0.5,
+        "hold": 1
+      },
+      "overview": "return"
+    },
+    {
+      "id": "final",
+      "type": "overview",
+      "title": "回到全貌，串起原因与结果",
+      "knowledgeNodeIds": [
+        "basic",
+        "web",
+        "development",
+        "data"
+      ],
+      "explanation": "完成的结果保留在全貌中",
+      "result": "把每个模块的输出交给下一步",
+      "timing": {
+        "read": 1,
+        "act": 0.5,
+        "hold": 1
+      },
+      "overview": "all"
+    }
+  ]
+}

@@ -1,43 +1,38 @@
 ---
-title: 分镜与运行参考
-description: 三种布局、节点、路径和状态字段
+title: 内容与运行参考
+description: 独立知识结构、v2 分镜、场景引用与运行命令
 ---
 
-必填字段是 `title`、`layout`、`steps`。默认参数为 `duration: 20`、`fps: 30`、`width: 1080`、`height: 1920`；可添加 `kicker`、`subtitle`、`summary` 和资料 `sources`。
+## 两份内容契约
 
-每步包含唯一的 `id`、短 `label`、动作 `caption`、完成 `result` 和 `diagram`。可选 `color`、逐字输入 `input`；列表可设置 `badge`。
+创建项目同时需要 `knowledge.json` 与 `story.json`：
 
-```json
-{
-  "id": "pay",
-  "label": "下单付款",
-  "caption": "付款后通知商家",
-  "result": "商家收到已付款订单",
-  "diagram": {
-    "nodes": [
-      {"id":"buyer","label":"买家","icon":"person"},
-      {"id":"store","label":"商家","icon":"store"}
-    ],
-    "edges": [{"from":"buyer","to":"store","label":"付款通知"}]
-  }
-}
+| 文件 | 作用 |
+| --- | --- |
+| knowledge.json | 受众、学习问题、适用条件、对象、模块与子过程、关系、逐节点来源及执行记录 |
+| story.json | schemaVersion: 2；画幅、章节、场景类型、关联知识节点、时长与动作 |
+| knowledge.md | 可读知识结构稿 |
+| storyboard.md | 可读讲解分镜 |
+
+知识节点使用稳定标识，包含关系、来源与场景引用必须有效；并行与条件关系不能仅靠数组顺序暗示。记录实际宿主及委派模式 `native` 或 `sequential`，顺序降级写清原因。
+
+分镜采用内容驱动时间轴，每镜头可以有多个动作阶段。基础场景有 `overview`、`sequence`、`tree`、`parallel`、`branch`、`state`、`linked`、`list` 与 `custom`。自定义场景在生成项目中实现，遵循相同局部帧与画幅接口。
+
+完整字段与限制以仓库 `skills/knowledge-motion/references/story-contract.md` 为准。成对示例位于 `examples/browser/`、`examples/ports/`、`examples/shopping/` 和 `examples/budget/`。
+
+## 创建与校验
+
+```bash
+node <skill>/scripts/create-project.mjs --knowledge <project>/knowledge.json --story <project>/story.json --project-root <project> --out out/knowledge-motion/my-topic
 ```
 
-以上是一个步骤片段。节点可同时指定 0–1 范围的 `x`、`y`；连线按数组顺序展开和传递对象。
-
-| 布局 | 数量 | 特殊字段 |
-| --- | --- | --- |
-| list | 2–10 行 | badge；类别配色 |
-| grid | 2–6 步 | 可选 input |
-| state | 2–8 步 | 顶层 metrics；每步 changes |
-
-state 指标使用 `id`、`label`、`initial`，可选 `prefix`、`suffix`。`changes` 的数字表示该步完成后的绝对值，未提到的指标保持原值。
-
-完整契约与示例位于仓库 `skills/knowledge-motion/references/story-contract.md` 和 `examples/`。
+输出路径隔离于 Skill 包，并拒绝覆盖。旧版 `layout + steps` 分镜不再接收，需要按知识结构重建 v2；既有独立生成项目仍可保留原源码运行。
 
 | 命令 | 作用 |
 | --- | --- |
-| npm run check | 校验分镜并同步 storyboard.md |
-| npm run preview | 生成关键帧 PNG |
+| npm run check | 校验知识与分镜，同步可读稿 |
+| npm run preview | 生成章节、机制状态和交接关键帧 |
 | npm run render | 导出并核验静音 MP4 |
 | npm run verify | 独立核验已有视频 |
+
+需 Node.js 20.19+、Chromium 系浏览器和 FFprobe。默认 30 fps，画幅按关系选择，时长由镜头阅读、动作和结果停留合计。媒体报告检查规格，内容、可读性与动态质量需实际观看。

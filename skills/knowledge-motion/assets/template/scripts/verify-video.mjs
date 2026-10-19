@@ -2,7 +2,7 @@ import {spawnSync} from 'node:child_process';
 import {readFileSync, writeFileSync} from 'node:fs';
 import {resolve, dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {normalizeStory} from '../src/story.mjs';
+import {normalizeProject} from '../src/story.mjs';
 
 export function verifyMetadata(metadata, story) {
   const streams = metadata.streams ?? [], videos = streams.filter((s) => s.codec_type === 'video'), audio = streams.filter((s) => s.codec_type === 'audio');
@@ -35,7 +35,7 @@ export function verifyVideo(videoFile, story, reportPath = resolve(dirname(video
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
     const videoFile = resolve(process.argv[2] ?? 'video.mp4');
-    const story = normalizeStory(JSON.parse(readFileSync(resolve(process.argv[3] ?? 'story.json'), 'utf8')));
+    const {story} = normalizeProject(JSON.parse(readFileSync(resolve(process.argv[4] ?? 'knowledge.json'), 'utf8')), JSON.parse(readFileSync(resolve(process.argv[3] ?? 'story.json'), 'utf8')));
     console.log(JSON.stringify(verifyVideo(videoFile, story), null, 2));
   } catch (error) {console.error(error.message); process.exitCode = 1;}
 }

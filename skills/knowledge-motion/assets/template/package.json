@@ -1,14 +1,16 @@
 {
   "name": "knowledge-motion-video",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
-  "engines": {"node": ">=20.19"},
+  "engines": {
+    "node": ">=20.19"
+  },
   "scripts": {
     "check": "node scripts/render.mjs --check",
     "preview": "node scripts/render.mjs --preview",
     "render": "node scripts/render.mjs",
-    "verify": "node scripts/verify-video.mjs video.mp4 story.json"
+    "verify": "node scripts/verify-video.mjs video.mp4 story.json knowledge.json"
   },
   "dependencies": {
     "@remotion/bundler": "4.0.536",

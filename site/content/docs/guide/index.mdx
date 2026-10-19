@@ -1,43 +1,41 @@
 ---
 title: 安装与第一条视频
-description: 从知识主题到静音成片
+description: 从资料研究、知识结构到静音成片
 ---
 
 ## 安装
-
-当前 checkout 可直接安装完整 Skill：
-
-```bash
-npx skills add . --skill knowledge-motion --agent codex --global --copy
-```
-
-Claude Code 把 `codex` 改为 `claude-code`；项目安装去掉 `--global`。复制安装时需要完整的 `skills/knowledge-motion/`，包括模板、脚本、锁文件和参考规则。
-
-从远程仓库安装：
 
 ```bash
 npx skills add resinya/knowledge-motion --skill knowledge-motion --agent codex --global --copy
 ```
 
+本地 checkout 可将仓库名换成 `.`。Claude Code 把 `codex` 改为 `claude-code`；项目安装去掉 `--global`。复制安装时保留完整 Skill，包括模板、脚本、锁文件和参考规则。
+
+WorkBuddy 通过技能页上传完整包；TRAE 国内版可使用项目 `.trae/skills/knowledge-motion/`。具体调度、可选项目角色模板和执行边界见仓库 `references/host-adapters.md`。Claude Code、WorkBuddy 和 TRAE 国内版目前完成官方文档与交接契约核对，尚未在对应宿主实测。
+
 ## 给出主题
 
 ```text
-用 $knowledge-motion 制作“钱去了哪里”，用模拟收支演示余额变化，20 秒。
+用 $knowledge-motion 制作“网购订单从付款到签收”，面向初学者。
+展开商家接单、仓库拣货复核和打包交接，明确这是模拟履约场景。
+自动选择画幅和时长，输出静音 MP4。
 ```
 
-也可以提供知识稿、受众、时长和输出目录。Agent 整理内容、选择布局并编写分镜。
+也可提供已有资料、受众、尺寸、时长与输出目录。Agent 先读资料并补齐关键来源，优先委派知识整理子 Agent；等待并审核结构后自动继续制作。无法原生委派时顺序执行同一职责，记录模式和原因。
 
-## 用例子直接验证
+内容决定时长。用户明确要求短视频时，先选择能讲清的范围；避免把所有细节快放到难以阅读。
+
+## 用仓库案例验证
 
 ```bash
-node skills/knowledge-motion/scripts/create-project.mjs --story skills/knowledge-motion/examples/shopping.json --project-root . --out out/knowledge-motion/shopping
-cd out/knowledge-motion/shopping
+node skills/knowledge-motion/scripts/create-project.mjs --knowledge skills/knowledge-motion/examples/shopping/knowledge.json --story skills/knowledge-motion/examples/shopping/story.json --project-root . --out out/knowledge-motion/shopping-v2
+cd out/knowledge-motion/shopping-v2
 npm ci
 npm run check
 npm run preview
 npm run render
 ```
 
-要求 Node.js 20.19+、FFprobe 和 Chromium 系浏览器。首次安装需要网络。可设置 `REMOTION_BROWSER_EXECUTABLE` 和 `FFPROBE_PATH` 指定本机程序；路径只保存在运行环境中。
+Node.js 20.19+、FFprobe 和 Chromium 系浏览器为运行条件；首次安装依赖需要网络。可通过 `REMOTION_BROWSER_EXECUTABLE` 与 `FFPROBE_PATH` 指定本机程序。
 
-先打开预览图，修正画面，再生成成片。视频与源码都保留在调用项目中。
+创建项目必须同时提供 `--knowledge` 和 `--story`。脚本拒绝旧分镜和覆盖已有目录，内容与依赖保存在独立输出项目。先打开预览图修正，再渲染并播放成片。

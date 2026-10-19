@@ -42,8 +42,8 @@ export const siteUrl = resolveSiteUrl(process.env.NEXT_PUBLIC_SITE_URL);
 export const siteTitle = 'Knowledge Motion · 知识动态信息图 Skill';
 
 export const siteDescription =
-  '把任意领域的知识、分类与过程制作成深色动态信息图。' +
-  '固定分区、逐步聚焦、对象传递、结果保留，输出静音 MP4、可修改的 Remotion 与 SVG 源项目和分镜。';
+  '先研究并组织任意领域的知识，再用深色动态信息图解释机制。' +
+  '总览导航、内部过程与多场景动画，交付静音 MP4、知识结构、分镜和可修改的 Remotion 与 SVG 源项目。';
 
 export const docsRoute = '/docs';
 export const docsImageRoute = '/og/docs';
@@ -75,12 +75,12 @@ export const categories = [
   {
     slug: 'how-it-works',
     title: '原理',
-    description: '从内容到分镜，再到按帧动画和视频导出。',
+    description: '资料研究、知识结构、讲解编排与按帧导出。',
   },
   {
     slug: 'reference',
     title: '参考',
-    description: '分镜字段、布局、运行命令与媒体验收。',
+    description: '知识与分镜契约、场景、运行命令及验收。',
   },
 ];
 
